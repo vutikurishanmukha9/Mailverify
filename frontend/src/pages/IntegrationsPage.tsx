@@ -463,6 +463,12 @@ export const IntegrationsPage: React.FC = () => {
           flex-direction: column;
           gap: var(--space-4);
         }
+
+        @media (max-width: 768px) {
+          .integrations-grid {
+            grid-template-columns: 1fr;
+          }
+        }
       `}</style>
     </div>
   );

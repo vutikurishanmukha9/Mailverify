@@ -691,9 +691,17 @@ func main() {
           text-align: center;
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 1024px) {
           .api-playground-grid {
             grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .code-pre,
+          .response-pre {
+            font-size: 11px;
+            padding: 10px;
           }
         }
       `}</style>

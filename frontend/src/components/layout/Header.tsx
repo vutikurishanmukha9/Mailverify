@@ -223,10 +223,44 @@ export const Header: React.FC = () => {
 
         @media (max-width: 768px) {
           .top-header {
-            padding: 0 var(--space-4);
+            padding: 0 14px;
           }
           .mobile-menu-btn {
             display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-standard);
+            color: var(--text-primary);
+          }
+          .breadcrumb-root,
+          .breadcrumb-separator {
+            display: none;
+          }
+          .breadcrumb-current {
+            font-size: 13px;
+            max-width: 140px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          .credit-pill-label {
+            display: none;
+          }
+        }
+
+        @media (max-width: 520px) {
+          .top-header {
+            padding: 0 10px;
+          }
+          .breadcrumb-current {
+            max-width: 110px;
+          }
+          .header-right .btn {
+            display: none;
           }
         }
       `}</style>

@@ -325,6 +325,24 @@ export const RoadmapPage: React.FC = () => {
           color: var(--text-secondary);
           line-height: 1.45;
         }
+
+        @media (max-width: 768px) {
+          .roadmap-items-grid {
+            grid-template-columns: 1fr;
+          }
+          .roadmap-filters-row {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+          }
+          .roadmap-filters-row > * {
+            width: 100%;
+          }
+          .roadmap-filters-row .tab-pill-nav {
+            overflow-x: auto;
+            width: 100%;
+          }
+        }
       `}</style>
     </div>
   );

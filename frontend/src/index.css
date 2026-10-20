@@ -953,16 +953,126 @@ code, pre {
   animation: spin 1s linear infinite;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
+/* ==========================================================================
+   Comprehensive Responsive System (Mobile, Tablet, Desktop)
+   ========================================================================== */
+
+/* Responsive Table Wrapper */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--border-standard);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-panel);
+}
+
+.table {
+  min-width: 600px;
+}
+
+/* Tablet / Medium Screens (<= 1024px) */
+@media (max-width: 1024px) {
   .page-container {
-    padding: var(--space-3);
+    padding: var(--space-4) var(--space-5);
   }
+}
+
+/* Mobile & Small Tablet Screens (<= 768px) */
+@media (max-width: 768px) {
+  .app-layout {
+    overflow-x: hidden;
+  }
+
+  .app-main {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .page-container {
+    padding: 12px 14px;
+    width: 100%;
+  }
+
   .page-header {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
   }
+
+  .page-header-title {
+    font-size: 18px;
+  }
+
+  .page-header-description {
+    font-size: 12.5px;
+  }
+
   .page-header-actions {
-    justify-content: flex-start;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .page-header-actions > * {
+    flex: 1 1 auto;
+  }
+
+  /* Modals on Mobile */
+  .modal-overlay {
+    padding: 12px;
+    align-items: flex-end;
+  }
+
+  .modal-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 88vh;
+    border-radius: 12px 12px 0 0;
+    margin: 0 !important;
+  }
+
+  /* Form Elements */
+  .form-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Tabs Horizontal Momentum Scroll */
+  .tabs-nav {
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Toasts on Mobile */
+  .toast-container {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    max-width: none;
+  }
+
+  .toast {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+/* Small Handheld Screens (<= 480px) */
+@media (max-width: 480px) {
+  .page-container {
+    padding: 10px 10px;
+  }
+
+  .page-header-title {
+    font-size: 17px;
+  }
+
+  .btn {
+    padding: 7px 12px;
+    font-size: 12px;
   }
 }

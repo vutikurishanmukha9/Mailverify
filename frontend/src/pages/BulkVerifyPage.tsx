@@ -1639,9 +1639,13 @@ export const BulkVerifyPage: React.FC = () => {
         .text-warning { color: var(--status-warning-text); }
         .text-error { color: var(--status-error-text); }
 
-        @media (max-width: 900px) {
+        @media (max-width: 1024px) {
           .bulk-grid-layout {
             grid-template-columns: 1fr;
+            gap: 16px;
+          }
+          .jobs-list {
+            max-height: 240px;
           }
           .overview-metrics-grid {
             grid-template-columns: repeat(2, 1fr);
@@ -1649,8 +1653,52 @@ export const BulkVerifyPage: React.FC = () => {
           .overview-metric-col:nth-child(2) {
             border-right: none;
           }
-          .overview-metric-col {
+          .overview-metric-col:nth-child(1),
+          .overview-metric-col:nth-child(2) {
             border-bottom: 1px solid var(--border-subtle);
+          }
+        }
+
+        @media (max-width: 768px) {
+          .records-toolbar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
+            padding: 10px;
+          }
+          .records-search-wrapper {
+            max-width: 100%;
+            min-width: 0;
+            width: 100%;
+          }
+          .records-filter-pills {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            flex-wrap: nowrap;
+            padding-bottom: 2px;
+          }
+          .filter-pill {
+            flex-shrink: 0;
+          }
+          .telemetry-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .overview-metrics-grid {
+            grid-template-columns: 1fr;
+          }
+          .overview-metric-col {
+            border-right: none !important;
+            border-bottom: 1px solid var(--border-subtle) !important;
+          }
+          .overview-metric-col:last-child {
+            border-bottom: none !important;
+          }
+          .metric-primary-val {
+            font-size: 18px;
           }
         }
       `}</style>

@@ -53,7 +53,7 @@ export const Sidebar: React.FC = () => {
       {isMobileMenuOpen && (
         <div
           className="modal-overlay"
-          style={{ zIndex: 900 }}
+          style={{ zIndex: 999 }}
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
@@ -522,11 +522,14 @@ export const Sidebar: React.FC = () => {
         @media (max-width: 768px) {
           .sidebar {
             position: fixed;
-            left: -260px;
+            left: -280px;
             top: 0;
             bottom: 0;
+            width: 270px !important;
+            max-width: 85vw;
             z-index: 1000;
-            transition: left 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: left 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 12px 0 35px rgba(0, 0, 0, 0.75);
           }
           .sidebar.mobile-open {
             left: 0;

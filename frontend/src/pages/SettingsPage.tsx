@@ -1252,8 +1252,18 @@ export const SettingsPage: React.FC = () => {
         }
 
         @media (max-width: 768px) {
-          .settings-form-grid, .plan-tiers-modal-grid {
+          .settings-form-grid,
+          .plan-tiers-modal-grid,
+          .billing-summary-grid {
             grid-template-columns: 1fr;
+          }
+          .pref-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+          }
+          .pref-desc {
+            max-width: 100%;
           }
         }
       `}</style>

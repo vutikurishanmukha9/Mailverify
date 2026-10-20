@@ -398,6 +398,17 @@ export const BuyCreditsPage: React.FC = () => {
           align-items: center;
           justify-content: space-between;
         }
+
+        @media (max-width: 768px) {
+          .packages-grid {
+            grid-template-columns: 1fr;
+          }
+          .balance-banner-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 14px;
+          }
+        }
       `}</style>
     </div>
   );

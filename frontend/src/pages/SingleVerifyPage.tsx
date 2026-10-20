@@ -904,9 +904,71 @@ export const SingleVerifyPage: React.FC = () => {
           color: var(--text-muted);
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 960px) {
           .diagnostics-matrix {
             grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
+        @media (max-width: 640px) {
+          .verify-bar-container {
+            padding: 12px;
+          }
+          .verify-command-group {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 8px;
+            gap: 8px;
+          }
+          .verify-command-group .verify-command-input {
+            padding: 6px 4px;
+            font-size: 13.5px;
+          }
+          .verify-command-btn {
+            width: 100%;
+            justify-content: center;
+            height: 38px;
+          }
+          .presets-tags {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            flex-wrap: nowrap;
+            width: 100%;
+            padding-bottom: 2px;
+          }
+          .preset-chip {
+            flex-shrink: 0;
+          }
+          .result-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+          }
+          .result-actions {
+            width: 100%;
+          }
+          .verdict-summary-strip {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+          }
+          .history-card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+          }
+          .history-filters {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            flex-wrap: nowrap;
+            padding-bottom: 2px;
+          }
+        }
+
+        @media (max-width: 520px) {
+          .diagnostics-matrix {
+            grid-template-columns: 1fr;
           }
         }
       `}</style>
