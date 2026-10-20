@@ -1,6 +1,6 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
-import { Menu, Coins, Plus } from 'lucide-react';
+import { Menu, Coins, Plus, HelpCircle, Layers } from 'lucide-react';
 import { Button } from '../common/Button';
 
 export const Header: React.FC = () => {
@@ -19,17 +19,17 @@ export const Header: React.FC = () => {
       case 'bulk':
         return 'Bulk Email Verification';
       case 'integrations':
-        return 'Platform Integrations';
+        return 'Integrations';
       case 'api':
-        return 'Developer API & Webhooks';
+        return 'API & Webhooks';
       case 'buy-credits':
-        return 'Purchase Add-on Credits';
+        return 'Buy Credits';
       case 'roadmap':
-        return 'Product Roadmap & Changelog';
+        return 'Roadmap & Changelog';
       case 'support':
-        return 'Help & Technical Support';
+        return 'Help & Support';
       case 'settings':
-        return `Account Settings · ${settingsTab.charAt(0).toUpperCase() + settingsTab.slice(1)}`;
+        return `Settings · ${settingsTab.charAt(0).toUpperCase() + settingsTab.slice(1)}`;
       default:
         return 'MailVerify';
     }
@@ -44,10 +44,10 @@ export const Header: React.FC = () => {
           onClick={() => setMobileMenuOpen(true)}
           aria-label="Open mobile navigation"
         >
-          <Menu size={18} />
+          <Menu size={16} />
         </button>
 
-        {/* Breadcrumb Path */}
+        {/* Clean Breadcrumb */}
         <div className="breadcrumb-path">
           <span className="breadcrumb-root">MailVerify</span>
           <span className="breadcrumb-separator">/</span>
@@ -56,56 +56,43 @@ export const Header: React.FC = () => {
       </div>
 
       <div className="header-right">
-        {/* Top Credits Pill */}
+        {/* Credits Counter Pill */}
         <div
           className="header-credit-pill"
           onClick={() => navigateTo('buy-credits')}
-          title="Click to purchase more credits"
+          title="Click to view plans or purchase credits"
         >
-          <Coins size={14} className="credit-pill-icon" />
+          <Coins size={13} className="credit-pill-icon" />
           <span className="credit-pill-count tabular-nums">
             {subscription.creditsRemaining.toLocaleString()}
           </span>
           <span className="credit-pill-label">credits</span>
           <span className="credit-pill-add">
-            <Plus size={11} />
+            <Plus size={10} />
           </span>
         </div>
 
-        {/* Contextual Action Button based on screen */}
+        {/* Contextual navigation link if on Single Verify */}
         {screen === 'single' && (
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => navigateTo('bulk')}
-            leftIcon={<Plus size={13} />}
-          >
-            Bulk Verify List
-          </Button>
-        )}
-
-        {screen === 'api' && (
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => {
-              const btn = document.getElementById('trigger-new-key-btn');
-              if (btn) btn.click();
-            }}
-            leftIcon={<Plus size={13} />}
-          >
-            Create API Key
-          </Button>
-        )}
-
-        {screen !== 'single' && screen !== 'bulk' && screen !== 'api' && (
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigateTo('api')}
+            onClick={() => navigateTo('bulk')}
+            leftIcon={<Layers size={12} />}
           >
-            API Docs
+            Bulk Verify
           </Button>
+        )}
+
+        {/* Technical Support quick link */}
+        {screen !== 'support' && (
+          <button
+            className="header-support-btn"
+            onClick={() => navigateTo('support')}
+            title="Help & Technical Documentation"
+          >
+            <HelpCircle size={15} />
+          </button>
         )}
       </div>
 
@@ -134,7 +121,7 @@ export const Header: React.FC = () => {
           background: transparent;
           border: 1px solid var(--border-standard);
           color: var(--text-secondary);
-          padding: 6px;
+          padding: 5px;
           border-radius: var(--radius-sm);
           cursor: pointer;
         }
@@ -143,12 +130,13 @@ export const Header: React.FC = () => {
           display: flex;
           align-items: center;
           gap: 6px;
-          font-size: 13px;
+          font-size: 12.5px;
+          user-select: none;
         }
 
         .breadcrumb-root {
           color: var(--text-muted);
-          font-weight: 500;
+          font-weight: 400;
         }
 
         .breadcrumb-separator {
@@ -158,29 +146,32 @@ export const Header: React.FC = () => {
 
         .breadcrumb-current {
           color: var(--text-primary);
-          font-weight: 600;
+          font-weight: 500;
         }
 
         .header-right {
           display: flex;
           align-items: center;
-          gap: var(--space-3);
+          gap: var(--space-2);
         }
 
         .header-credit-pill {
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 5px;
           background-color: var(--bg-panel);
           border: 1px solid var(--border-standard);
-          border-radius: var(--radius-full);
-          padding: 4px 10px 4px 8px;
+          border-radius: var(--radius-sm);
+          padding: 4px 8px;
           cursor: pointer;
-          transition: all 0.15s ease;
+          font-size: 12px;
+          transition: border-color 0.12s ease, background-color 0.12s ease;
+          user-select: none;
         }
+
         .header-credit-pill:hover {
-          border-color: var(--accent-border);
           background-color: var(--bg-hover);
+          border-color: var(--border-strong);
         }
 
         .credit-pill-icon {
@@ -188,37 +179,54 @@ export const Header: React.FC = () => {
         }
 
         .credit-pill-count {
-          font-size: 12.5px;
-          font-weight: 700;
           color: var(--text-primary);
+          font-weight: 600;
+          font-family: var(--font-mono);
         }
 
         .credit-pill-label {
-          font-size: 11px;
           color: var(--text-muted);
+          font-size: 11px;
         }
 
         .credit-pill-add {
           display: flex;
           align-items: center;
           justify-content: center;
-          background-color: var(--accent-subtle);
-          color: var(--accent-text);
-          border-radius: 50%;
           width: 14px;
           height: 14px;
+          border-radius: 3px;
+          background-color: var(--accent-subtle);
+          color: var(--accent-text);
           margin-left: 2px;
         }
 
-        @media (max-width: 900px) {
+        .header-support-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 28px;
+          height: 28px;
+          border-radius: var(--radius-sm);
+          background: transparent;
+          border: 1px solid transparent;
+          color: var(--text-muted);
+          cursor: pointer;
+          transition: all 0.12s ease;
+        }
+
+        .header-support-btn:hover {
+          color: var(--text-primary);
+          background-color: var(--bg-hover);
+          border-color: var(--border-standard);
+        }
+
+        @media (max-width: 768px) {
           .top-header {
             padding: 0 var(--space-4);
           }
           .mobile-menu-btn {
             display: flex;
-          }
-          .breadcrumb-path {
-            font-size: 12px;
           }
         }
       `}</style>

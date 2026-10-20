@@ -2,7 +2,7 @@ import React from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
-import { SupportWidget } from './components/layout/SupportWidget';
+// import { SupportWidget } from './components/layout/SupportWidget';
 import { ToastContainer } from './components/common/ToastContainer';
 
 // Pages
@@ -52,9 +52,6 @@ const AppContent: React.FC = () => {
         {screen === 'support' && <SupportPage />}
         {screen === 'settings' && <SettingsPage />}
       </main>
-
-      {/* Global Non-obstructive Floating Support Launcher */}
-      <SupportWidget />
 
       {/* Global Accessible Toast Notifications */}
       <ToastContainer />

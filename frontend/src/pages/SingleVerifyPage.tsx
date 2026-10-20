@@ -4,9 +4,6 @@ import { verifyEmailAddress } from '../utils/verifier';
 import type { SingleVerificationResult } from '../types';
 import {
   Mail,
-  CheckCircle2,
-  AlertTriangle,
-  XCircle,
   Copy,
   Check,
   RotateCw,
@@ -20,7 +17,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import { DeliverabilityBadge } from '../components/common/Badge';
-import { Card, CardBody, CardHeader } from '../components/common/Card';
+import { Card, CardBody } from '../components/common/Card';
 
 const SAMPLE_PRESETS = [
   { label: 'Corporate Lead', email: 'elena.rostova@datadog.com' },
@@ -81,7 +78,7 @@ export const SingleVerifyPage: React.FC = () => {
       addSingleVerification(result);
       setIsLoading(false);
       setInputEmail(target);
-    }, 420);
+    }, 380);
   };
 
   const handleCopyJson = () => {
@@ -157,268 +154,232 @@ export const SingleVerifyPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Input Verification Card */}
-      <Card className="verify-input-card">
-        <CardBody>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleVerify();
-            }}
-            className="verify-input-form"
-          >
-            <div className="verify-input-group">
-              <Mail className="verify-input-icon" size={17} />
-              <input
-                type="text"
-                className="verify-text-input"
-                placeholder="Enter email to verify (e.g. alex.developer@datadoghq.com)..."
-                value={inputEmail}
-                onChange={(e) => setInputEmail(e.target.value)}
-                autoFocus
-              />
-              <Button
-                type="submit"
-                variant="primary"
-                isLoading={isLoading}
-                leftIcon={<Zap size={14} />}
-                className="verify-submit-btn"
-              >
-                Verify Mailbox
-              </Button>
-            </div>
-          </form>
-
-          {/* Preset Buttons for Quick Testing */}
-          <div className="presets-row">
-            <span className="presets-label">Quick Scenarios:</span>
-            <div className="presets-list">
-              {SAMPLE_PRESETS.map((preset) => (
-                <button
-                  key={preset.label}
-                  type="button"
-                  className="preset-pill"
-                  onClick={() => {
-                    setInputEmail(preset.email);
-                    handleVerify(preset.email);
-                  }}
-                >
-                  {preset.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </CardBody>
-      </Card>
-
-      {/* Result Display Section */}
-      {currentResult && (
-        <div className="result-section">
-          {/* Main Verdict Card */}
-          <Card className="result-verdict-card">
-            <CardHeader
-              title={
-                <div className="verdict-header-row">
-                  <span className="verdict-email font-mono">{currentResult.email}</span>
-                  <DeliverabilityBadge
-                    status={currentResult.status}
-                    score={currentResult.score}
-                  />
-                </div>
-              }
-              action={
-                <div className="verdict-actions">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleVerify(currentResult.email)}
-                    leftIcon={<RotateCw size={12} />}
-                    isLoading={isLoading}
-                  >
-                    Re-verify
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleCopyJson}
-                    leftIcon={copiedJson ? <Check size={12} /> : <Copy size={12} />}
-                  >
-                    {copiedJson ? 'Copied' : 'Copy JSON'}
-                  </Button>
-                </div>
-              }
+      {/* Sleek Command-style Search Bar (NO card-in-card) */}
+      <div className="verify-bar-container">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleVerify();
+          }}
+          className="verify-command-form"
+        >
+          <div className="verify-command-group">
+            <Mail className="verify-command-icon" size={16} />
+            <input
+              type="text"
+              className="verify-command-input font-mono"
+              placeholder="Enter email to inspect (e.g. alex.developer@datadoghq.com)..."
+              value={inputEmail}
+              onChange={(e) => setInputEmail(e.target.value)}
+              autoFocus
             />
-            <CardBody>
-              {/* Primary Reason Banner */}
-              <div
-                className={`verdict-reason-banner verdict-reason-${currentResult.status}`}
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+              isLoading={isLoading}
+              leftIcon={<Zap size={13} />}
+              className="verify-command-btn"
+            >
+              Verify Mailbox
+            </Button>
+          </div>
+        </form>
+
+        {/* Preset Quick Test Scenarios */}
+        <div className="verify-presets-bar">
+          <span className="presets-caption">Quick Scenarios:</span>
+          <div className="presets-tags">
+            {SAMPLE_PRESETS.map((preset) => (
+              <button
+                key={preset.label}
+                type="button"
+                className="preset-chip"
+                onClick={() => {
+                  setInputEmail(preset.email);
+                  handleVerify(preset.email);
+                }}
               >
-                <div className="reason-icon-wrapper">
-                  {currentResult.status === 'deliverable' && (
-                    <CheckCircle2 size={16} />
-                  )}
-                  {currentResult.status === 'risky' && <AlertTriangle size={16} />}
-                  {currentResult.status === 'undeliverable' && <XCircle size={16} />}
-                </div>
-                <div className="reason-text">
-                  <strong>Verification Verdict:</strong> {currentResult.reason}
-                </div>
-                <div className="verdict-meta-pills">
-                  <span className="meta-pill tabular-nums">
-                    <Clock size={11} /> {currentResult.latencyMs}ms latency
-                  </span>
-                  <span className="meta-pill font-mono">
-                    <Server size={11} /> {currentResult.mxHost}
-                  </span>
-                </div>
+                {preset.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Detailed Result & Inspection Console */}
+      {currentResult && (
+        <div className="result-console">
+          <Card className="result-card">
+            {/* Header: Email, Deliverability Badge, Actions */}
+            <div className="result-header">
+              <div className="result-title-group">
+                <span className="result-email-address font-mono">{currentResult.email}</span>
+                <DeliverabilityBadge
+                  status={currentResult.status}
+                  score={currentResult.score}
+                />
               </div>
+              <div className="result-actions">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleVerify(currentResult.email)}
+                  leftIcon={<RotateCw size={12} />}
+                  isLoading={isLoading}
+                >
+                  Re-verify
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCopyJson}
+                  leftIcon={copiedJson ? <Check size={12} className="text-success" /> : <Copy size={12} />}
+                >
+                  {copiedJson ? 'Copied' : 'Copy JSON'}
+                </Button>
+              </div>
+            </div>
 
-              {/* 8-Point Diagnostic Checks Matrix */}
-              <div className="diagnostics-grid">
+            {/* Verdict Summary Strip */}
+            <div className="verdict-summary-strip">
+              <div className="verdict-summary-left">
+                <span className={`verdict-pip pip-${currentResult.status}`} />
+                <span className="verdict-text">{currentResult.reason}</span>
+              </div>
+              <div className="verdict-meta-group font-mono tabular-nums">
+                <span className="verdict-meta-item">
+                  <Clock size={11} /> {currentResult.latencyMs}ms
+                </span>
+                <span className="verdict-meta-item">
+                  <Server size={11} /> {currentResult.mxHost}
+                </span>
+              </div>
+            </div>
+
+            <CardBody compact>
+              {/* 8-Point Diagnostic Checks Grid */}
+              <div className="diagnostics-matrix">
                 {/* 1. Syntax */}
-                <div className="diagnostic-item">
-                  <div className="diag-header">
-                    <span className="diag-title">RFC 5322 Syntax</span>
-                    {currentResult.syntaxValid ? (
-                      <span className="diag-status text-success">Valid</span>
-                    ) : (
-                      <span className="diag-status text-error">Invalid</span>
-                    )}
+                <div className="matrix-cell">
+                  <div className="matrix-top">
+                    <span className="matrix-title">RFC 5322 Syntax</span>
+                    <span className={`matrix-status ${currentResult.syntaxValid ? 'status-pass' : 'status-fail'}`}>
+                      {currentResult.syntaxValid ? 'Valid' : 'Syntax Error'}
+                    </span>
                   </div>
-                  <div className="diag-desc">Format complies with IETF RFC mail standards.</div>
+                  <div className="matrix-meta font-sans">Complies with IETF RFC mail standard.</div>
                 </div>
 
-                {/* 2. DNS MX Records */}
-                <div className="diagnostic-item">
-                  <div className="diag-header">
-                    <span className="diag-title">DNS MX Resolution</span>
-                    {currentResult.mxRecordsFound ? (
-                      <span className="diag-status text-success">Resolved</span>
-                    ) : (
-                      <span className="diag-status text-error">Not Found</span>
-                    )}
+                {/* 2. DNS MX */}
+                <div className="matrix-cell">
+                  <div className="matrix-top">
+                    <span className="matrix-title">DNS MX Resolution</span>
+                    <span className={`matrix-status ${currentResult.mxRecordsFound ? 'status-pass' : 'status-fail'}`}>
+                      {currentResult.mxRecordsFound ? 'Resolved' : 'No MX Records'}
+                    </span>
                   </div>
-                  <div className="diag-desc font-mono">
+                  <div className="matrix-meta font-mono" title={currentResult.mxHost}>
                     Host: {currentResult.mxHost}
                   </div>
                 </div>
 
-                {/* 3. SMTP Handshake */}
-                <div className="diagnostic-item">
-                  <div className="diag-header">
-                    <span className="diag-title">SMTP Mailbox Check</span>
-                    {currentResult.smtpCheck ? (
-                      <span className="diag-status text-success">Accepted</span>
-                    ) : (
-                      <span className="diag-status text-error">Rejected</span>
-                    )}
+                {/* 3. SMTP Mailbox */}
+                <div className="matrix-cell">
+                  <div className="matrix-top">
+                    <span className="matrix-title">SMTP Mailbox Check</span>
+                    <span className={`matrix-status ${currentResult.smtpCheck ? 'status-pass' : 'status-fail'}`}>
+                      {currentResult.smtpCheck ? 'Accepted (250)' : 'Rejected (550)'}
+                    </span>
                   </div>
-                  <div className="diag-desc font-mono">
+                  <div className="matrix-meta font-mono">
                     {currentResult.smtpResponse}
                   </div>
                 </div>
 
-                {/* 4. Disposable Detection */}
-                <div className="diagnostic-item">
-                  <div className="diag-header">
-                    <span className="diag-title">Disposable Email</span>
-                    {!currentResult.isDisposable ? (
-                      <span className="diag-status text-success">Clean (Safe)</span>
-                    ) : (
-                      <span className="diag-status text-error">Disposable</span>
-                    )}
+                {/* 4. Disposable */}
+                <div className="matrix-cell">
+                  <div className="matrix-top">
+                    <span className="matrix-title">Disposable Email</span>
+                    <span className={`matrix-status ${!currentResult.isDisposable ? 'status-pass' : 'status-fail'}`}>
+                      {!currentResult.isDisposable ? 'Clean' : 'Disposable Burner'}
+                    </span>
                   </div>
-                  <div className="diag-desc">
-                    {currentResult.isDisposable
-                      ? 'Temporary address from burner service.'
-                      : 'Not listed in disposable provider database.'}
+                  <div className="matrix-meta font-sans">
+                    {!currentResult.isDisposable ? 'Verified clean domain.' : 'Temporary burner inbox.'}
                   </div>
                 </div>
 
-                {/* 5. Free Mail Provider */}
-                <div className="diagnostic-item">
-                  <div className="diag-header">
-                    <span className="diag-title">Provider Type</span>
-                    <span className="diag-status text-neutral">
+                {/* 5. Provider Type */}
+                <div className="matrix-cell">
+                  <div className="matrix-top">
+                    <span className="matrix-title">Provider Type</span>
+                    <span className="matrix-status status-neutral">
                       {currentResult.isFreeMail ? 'Free Webmail' : 'Custom Corporate'}
                     </span>
                   </div>
-                  <div className="diag-desc">
-                    {currentResult.isFreeMail
-                      ? 'Consumer inbox (Gmail, Outlook, Yahoo).'
-                      : 'Corporate business domain.'}
+                  <div className="matrix-meta font-sans">
+                    {currentResult.isFreeMail ? 'Consumer mailbox (Gmail/Yahoo).' : 'Corporate business domain.'}
                   </div>
                 </div>
 
-                {/* 6. Role-based Account */}
-                <div className="diagnostic-item">
-                  <div className="diag-header">
-                    <span className="diag-title">Role-based Mailbox</span>
-                    {!currentResult.isRoleBased ? (
-                      <span className="diag-status text-success">Individual</span>
-                    ) : (
-                      <span className="diag-status text-warning">Team / Role</span>
-                    )}
+                {/* 6. Role Account */}
+                <div className="matrix-cell">
+                  <div className="matrix-top">
+                    <span className="matrix-title">Role-based Mailbox</span>
+                    <span className={`matrix-status ${!currentResult.isRoleBased ? 'status-pass' : 'status-warn'}`}>
+                      {!currentResult.isRoleBased ? 'Individual' : 'Team / Role'}
+                    </span>
                   </div>
-                  <div className="diag-desc">
-                    {currentResult.isRoleBased
-                      ? 'Shared department inbox (sales@, info@, billing@).'
-                      : 'Direct personal employee inbox.'}
+                  <div className="matrix-meta font-sans">
+                    {!currentResult.isRoleBased ? 'Direct personal employee inbox.' : 'Shared team inbox (support@, billing@).'}
                   </div>
                 </div>
 
                 {/* 7. Catch-all Domain */}
-                <div className="diagnostic-item">
-                  <div className="diag-header">
-                    <span className="diag-title">Catch-all Status</span>
-                    {!currentResult.isCatchAll ? (
-                      <span className="diag-status text-success">Direct Mailbox</span>
-                    ) : (
-                      <span className="diag-status text-warning">Catch-all Active</span>
-                    )}
+                <div className="matrix-cell">
+                  <div className="matrix-top">
+                    <span className="matrix-title">Catch-all Configuration</span>
+                    <span className={`matrix-status ${!currentResult.isCatchAll ? 'status-pass' : 'status-warn'}`}>
+                      {!currentResult.isCatchAll ? 'Explicit Routing' : 'Catch-all Active'}
+                    </span>
                   </div>
-                  <div className="diag-desc">
-                    {currentResult.isCatchAll
-                      ? 'Server accepts any address at this domain.'
-                      : 'Explicit recipient mailbox routing.'}
+                  <div className="matrix-meta font-sans">
+                    {!currentResult.isCatchAll ? 'Mailbox verified explicitly.' : 'Server accepts all domain addresses.'}
                   </div>
                 </div>
 
-                {/* 8. Spam Trap Threat */}
-                <div className="diagnostic-item">
-                  <div className="diag-header">
-                    <span className="diag-title">Spam Trap Threat</span>
-                    {currentResult.spamTrapScore < 20 ? (
-                      <span className="diag-status text-success">0% Risk</span>
-                    ) : (
-                      <span className="diag-status text-error">
-                        {currentResult.spamTrapScore}% Trap Risk
-                      </span>
-                    )}
+                {/* 8. Spam Trap */}
+                <div className="matrix-cell">
+                  <div className="matrix-top">
+                    <span className="matrix-title">Spam Trap Assessment</span>
+                    <span className={`matrix-status ${currentResult.spamTrapScore < 20 ? 'status-pass' : 'status-fail'}`}>
+                      {currentResult.spamTrapScore < 20 ? '0% Risk' : `${currentResult.spamTrapScore}% Trap Risk`}
+                    </span>
                   </div>
-                  <div className="diag-desc">
-                    {currentResult.spamTrapScore < 20
-                      ? 'No honeypot or spam seed attributes.'
-                      : 'High risk of toxic blacklist trap.'}
+                  <div className="matrix-meta font-sans">
+                    {currentResult.spamTrapScore < 20 ? 'Zero honeypot signatures.' : 'High toxic trap probability.'}
                   </div>
                 </div>
               </div>
 
-              {/* Developer Raw JSON Accordion */}
-              <div className="raw-json-accordion">
+              {/* Developer Raw JSON Payload Drawer */}
+              <div className="raw-json-panel">
                 <button
                   type="button"
-                  className="raw-json-toggle"
+                  className="raw-json-header-btn"
                   onClick={() => setIsRawJsonExpanded(!isRawJsonExpanded)}
                 >
-                  <Code size={14} />
-                  <span>Developer Payload (RFC Response Inspection)</span>
-                  <span className="raw-json-arrow">
-                    {isRawJsonExpanded ? 'Collapse' : 'Expand'}
+                  <div className="json-btn-left">
+                    <Code size={13} />
+                    <span>Raw Telemetry Payload</span>
+                  </div>
+                  <span className="json-expand-label font-mono">
+                    {isRawJsonExpanded ? 'Hide' : 'Inspect JSON'}
                   </span>
                 </button>
                 {isRawJsonExpanded && (
-                  <pre className="raw-json-content font-mono">
+                  <pre className="raw-json-code font-mono">
                     {JSON.stringify(currentResult.rawJson, null, 2)}
                   </pre>
                 )}
@@ -430,164 +391,129 @@ export const SingleVerifyPage: React.FC = () => {
 
       {/* Verification History Table */}
       <div className="history-section">
-        <div className="history-header-row">
+        <div className="history-header">
           <div>
-            <h2 className="history-section-title">Recent Verifications</h2>
-            <p className="history-section-subtitle">
-              Locally cached log of addresses checked during this session.
+            <h2 className="history-title">Recent Verifications</h2>
+            <p className="history-subtitle">
+              Locally cached log of mailboxes tested during this session.
             </p>
           </div>
           <div className="history-controls">
-            {/* Search */}
-            <div className="input-with-icon history-search">
-              <Search size={14} className="input-icon-left" />
-              <input
-                type="text"
-                className="input input-sm"
-                placeholder="Filter by email or domain..."
-                value={historySearch}
-                onChange={(e) => setHistorySearch(e.target.value)}
-              />
-            </div>
-
-            {/* Filter Tabs */}
             <div className="tab-pill-nav">
               <button
+                type="button"
                 className={`tab-pill-btn ${historyFilter === 'all' ? 'active' : ''}`}
                 onClick={() => setHistoryFilter('all')}
               >
-                All ({singleHistory.length})
+                All
               </button>
               <button
-                className={`tab-pill-btn ${
-                  historyFilter === 'deliverable' ? 'active' : ''
-                }`}
+                type="button"
+                className={`tab-pill-btn ${historyFilter === 'deliverable' ? 'active' : ''}`}
                 onClick={() => setHistoryFilter('deliverable')}
               >
                 Deliverable
               </button>
               <button
+                type="button"
                 className={`tab-pill-btn ${historyFilter === 'risky' ? 'active' : ''}`}
                 onClick={() => setHistoryFilter('risky')}
               >
                 Risky
               </button>
               <button
-                className={`tab-pill-btn ${
-                  historyFilter === 'undeliverable' ? 'active' : ''
-                }`}
+                type="button"
+                className={`tab-pill-btn ${historyFilter === 'undeliverable' ? 'active' : ''}`}
                 onClick={() => setHistoryFilter('undeliverable')}
               >
                 Undeliverable
               </button>
             </div>
-
+            <div className="history-search-wrap">
+              <Search size={13} className="search-icon-left" />
+              <input
+                type="text"
+                className="history-search-input"
+                placeholder="Filter history..."
+                value={historySearch}
+                onChange={(e) => setHistorySearch(e.target.value)}
+              />
+            </div>
             {singleHistory.length > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearSingleHistory}
-                leftIcon={<Trash2 size={13} />}
-                className="text-muted"
-                title="Clear verification history"
+              <button
+                className="clear-history-btn"
+                onClick={() => {
+                  if (confirm('Clear all local single verification history?')) {
+                    clearSingleHistory();
+                  }
+                }}
+                title="Clear history"
               >
-                Clear
-              </Button>
+                <Trash2 size={13} />
+                <span>Clear</span>
+              </button>
             )}
           </div>
         </div>
 
-        {/* Table Container */}
+        {/* History Table */}
         <div className="table-container">
           <table className="table">
             <thead>
               <tr>
-                <th>Email Address</th>
-                <th>Status</th>
-                <th>Score</th>
-                <th>MX Provider</th>
-                <th>Latency</th>
-                <th>Verified At</th>
-                <th style={{ textAlign: 'right' }}>Actions</th>
+                <th style={{ width: '38%' }}>Recipient Address</th>
+                <th style={{ width: '20%' }}>Status</th>
+                <th style={{ width: '12%' }}>Score</th>
+                <th style={{ width: '20%' }}>MX Host</th>
+                <th style={{ width: '10%', textAlign: 'right' }}>Action</th>
               </tr>
             </thead>
             <tbody>
-              {filteredHistory.length === 0 ? (
-                <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '36px 14px' }}>
-                    <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>
-                      No verifications found matching your filter criteria.
-                    </div>
-                  </td>
-                </tr>
-              ) : (
+              {filteredHistory.length > 0 ? (
                 filteredHistory.map((item) => (
-                  <tr key={item.id}>
-                    <td className="primary-cell font-mono">{item.email}</td>
+                  <tr
+                    key={item.id}
+                    className="history-row"
+                    onClick={() => {
+                      setCurrentResult(item);
+                      setInputEmail(item.email);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                  >
+                    <td className="primary-cell font-mono">
+                      {item.email}
+                    </td>
                     <td>
                       <DeliverabilityBadge status={item.status} />
                     </td>
-                    <td className="font-mono tabular-nums">
-                      <span
-                        style={{
-                          fontWeight: 600,
-                          color:
-                            item.score > 80
-                              ? 'var(--status-success-text)'
-                              : item.score > 50
-                              ? 'var(--status-warning-text)'
-                              : 'var(--status-error-text)'
-                        }}
-                      >
-                        {item.score}/100
+                    <td>
+                      <span className="font-mono tabular-nums">{item.score}%</span>
+                    </td>
+                    <td>
+                      <span className="font-mono history-mx" title={item.mxHost}>
+                        {item.mxHost}
                       </span>
                     </td>
-                    <td className="font-mono" style={{ fontSize: 12 }}>
-                      {item.mxHost}
-                    </td>
-                    <td className="tabular-nums font-mono" style={{ fontSize: 12 }}>
-                      {item.latencyMs}ms
-                    </td>
-                    <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                      {new Date(item.verifiedAt).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit'
-                      })}
-                    </td>
                     <td style={{ textAlign: 'right' }}>
-                      <div
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 6
+                      <button
+                        className="history-action-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteSingleHistoryItem(item.id);
                         }}
+                        title="Delete from history"
                       >
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setCurrentResult(item);
-                            setInputEmail(item.email);
-                            window.scrollTo({ top: 120, behavior: 'smooth' });
-                          }}
-                          className="btn-sm"
-                        >
-                          Inspect
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteSingleHistoryItem(item.id)}
-                          className="btn-icon"
-                          title="Delete from history"
-                        >
-                          <Trash2 size={13} />
-                        </Button>
-                      </div>
+                        <Trash2 size={12} />
+                      </button>
                     </td>
                   </tr>
                 ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="empty-history-cell">
+                    <p>No verification history found.</p>
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
@@ -595,270 +521,297 @@ export const SingleVerifyPage: React.FC = () => {
       </div>
 
       <style>{`
-        .verify-input-card {
-          margin-bottom: var(--space-6);
-          border-color: var(--border-strong);
+        /* Command Input Bar */
+        .verify-bar-container {
+          background-color: var(--bg-panel);
+          border: 1px solid var(--border-standard);
+          border-radius: var(--radius-md);
+          padding: 14px 16px;
+          margin-bottom: var(--space-4);
         }
 
-        .verify-input-group {
+        .verify-command-group {
           position: relative;
           display: flex;
           align-items: center;
-          gap: var(--space-2);
           background-color: var(--bg-input);
           border: 1px solid var(--border-standard);
-          border-radius: var(--radius-md);
-          padding: 6px 6px 6px 14px;
-          transition: border-color 0.15s ease;
+          border-radius: var(--radius-sm);
+          padding: 4px 4px 4px 12px;
+          transition: border-color 0.12s ease;
+          gap: 8px;
         }
 
-        .verify-input-group:focus-within {
+        .verify-command-group:focus-within {
           border-color: var(--accent-primary);
-          box-shadow: 0 0 0 1px var(--accent-primary);
         }
 
-        .verify-input-icon {
+        .verify-command-icon {
           color: var(--text-muted);
           flex-shrink: 0;
         }
 
-        .verify-text-input {
+        .verify-command-input {
           flex: 1;
           background: transparent;
           border: none;
           color: var(--text-primary);
-          font-family: var(--font-mono);
-          font-size: 14px;
+          font-size: 13px;
           outline: none;
           min-width: 0;
         }
-        .verify-text-input::placeholder {
+        .verify-command-input::placeholder {
           font-family: var(--font-sans);
           color: var(--text-tertiary);
-          font-size: 13.5px;
+          font-size: 12.5px;
         }
 
-        .verify-submit-btn {
+        .verify-command-btn {
           flex-shrink: 0;
         }
 
-        .presets-row {
+        .verify-presets-bar {
           display: flex;
           align-items: center;
-          gap: var(--space-2);
-          margin-top: var(--space-3);
+          gap: 8px;
+          margin-top: 10px;
           flex-wrap: wrap;
         }
 
-        .presets-label {
-          font-size: 11.5px;
+        .presets-caption {
+          font-size: 11px;
           color: var(--text-muted);
           font-weight: 500;
         }
 
-        .presets-list {
+        .presets-tags {
           display: flex;
-          gap: 6px;
+          gap: 4px;
           flex-wrap: wrap;
         }
 
-        .preset-pill {
+        .preset-chip {
           background-color: var(--bg-panel-elevated);
-          border: 1px solid var(--border-standard);
+          border: 1px solid var(--border-subtle);
           color: var(--text-secondary);
-          font-size: 11.5px;
-          padding: 3px 8px;
-          border-radius: var(--radius-sm);
+          font-size: 11px;
+          padding: 2px 7px;
+          border-radius: var(--radius-xs);
           cursor: pointer;
-          transition: all 0.12s ease;
+          transition: all 0.1s ease;
         }
-        .preset-pill:hover {
-          border-color: var(--border-strong);
+        .preset-chip:hover {
           color: var(--text-primary);
+          border-color: var(--border-strong);
           background-color: var(--bg-hover);
         }
 
-        .result-section {
-          margin-bottom: var(--space-8);
-          animation: fadeIn 0.2s ease-out;
-        }
-
-        .verdict-header-row {
-          display: flex;
-          align-items: center;
-          gap: var(--space-3);
-          flex-wrap: wrap;
-        }
-
-        .verdict-email {
-          font-size: 16px;
-          color: var(--text-primary);
-          font-weight: 600;
-        }
-
-        .verdict-actions {
-          display: flex;
-          align-items: center;
-          gap: var(--space-2);
-        }
-
-        .verdict-reason-banner {
-          display: flex;
-          align-items: center;
-          gap: var(--space-3);
-          padding: 12px 16px;
-          border-radius: var(--radius-sm);
+        /* Result Console */
+        .result-console {
           margin-bottom: var(--space-5);
-          font-size: 13px;
+          animation: fadeIn 0.15s ease-out;
         }
 
-        .verdict-reason-deliverable {
-          background-color: var(--status-success-subtle);
-          border: 1px solid var(--status-success-border);
-          color: var(--status-success-text);
+        .result-card {
+          background-color: var(--bg-panel);
+          border: 1px solid var(--border-standard);
+          border-radius: var(--radius-md);
+          overflow: hidden;
         }
 
-        .verdict-reason-risky {
-          background-color: var(--status-warning-subtle);
-          border: 1px solid var(--status-warning-border);
-          color: var(--status-warning-text);
-        }
-
-        .verdict-reason-undeliverable {
-          background-color: var(--status-error-subtle);
-          border: 1px solid var(--status-error-border);
-          color: var(--status-error-text);
-        }
-
-        .reason-icon-wrapper {
-          flex-shrink: 0;
+        .result-header {
           display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 12px 16px;
+          border-bottom: 1px solid var(--border-subtle);
+          background-color: #0E0F12;
+          flex-wrap: wrap;
+          gap: 10px;
         }
 
-        .reason-text {
-          flex: 1;
-        }
-
-        .verdict-meta-pills {
+        .result-title-group {
           display: flex;
-          gap: var(--space-2);
+          align-items: center;
+          gap: 10px;
+        }
+
+        .result-email-address {
+          font-size: 14.5px;
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+
+        .result-actions {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .verdict-summary-strip {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 10px 16px;
+          border-bottom: 1px solid var(--border-subtle);
+          background-color: rgba(255, 255, 255, 0.02);
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        .verdict-summary-left {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .verdict-pip {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
           flex-shrink: 0;
         }
+        .pip-deliverable { background-color: var(--status-success); }
+        .pip-risky { background-color: var(--status-warning); }
+        .pip-undeliverable { background-color: var(--status-error); }
 
-        .meta-pill {
+        .verdict-text {
+          font-size: 12.5px;
+          color: var(--text-primary);
+          font-weight: 500;
+        }
+
+        .verdict-meta-group {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .verdict-meta-item {
           display: inline-flex;
           align-items: center;
           gap: 4px;
           font-size: 11px;
-          padding: 2px 8px;
-          background-color: rgba(0, 0, 0, 0.2);
-          border-radius: var(--radius-full);
-          color: var(--text-secondary);
-        }
-
-        .diagnostics-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-          gap: var(--space-3);
-          margin-bottom: var(--space-5);
-        }
-
-        .diagnostic-item {
-          background-color: #121316;
-          border: 1px solid var(--border-standard);
-          border-radius: var(--radius-sm);
-          padding: var(--space-3);
-        }
-
-        .diag-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 4px;
-        }
-
-        .diag-title {
-          font-size: 12px;
-          font-weight: 600;
-          color: var(--text-secondary);
-        }
-
-        .diag-status {
-          font-size: 11px;
-          font-weight: 600;
-        }
-
-        .text-success { color: var(--status-success-text); }
-        .text-warning { color: var(--status-warning-text); }
-        .text-error { color: var(--status-error-text); }
-        .text-neutral { color: var(--text-muted); }
-
-        .diag-desc {
-          font-size: 11.5px;
           color: var(--text-muted);
-          line-height: 1.35;
         }
 
-        .raw-json-accordion {
-          border-top: 1px solid var(--border-subtle);
-          padding-top: var(--space-3);
+        /* 8-Point Diagnostics Matrix */
+        .diagnostics-matrix {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 8px;
+          margin-bottom: 14px;
         }
 
-        .raw-json-toggle {
-          display: flex;
-          align-items: center;
-          gap: var(--space-2);
-          background: transparent;
-          border: none;
-          color: var(--text-secondary);
-          font-size: 12px;
-          cursor: pointer;
-          width: 100%;
-          padding: 4px 0;
-        }
-        .raw-json-toggle:hover {
-          color: var(--text-primary);
-        }
-
-        .raw-json-arrow {
-          margin-left: auto;
-          font-size: 11px;
-          color: var(--accent-text);
-        }
-
-        .raw-json-content {
-          margin-top: var(--space-2);
-          padding: var(--space-3);
-          background-color: #0E0F12;
+        .matrix-cell {
+          background-color: var(--bg-input);
           border: 1px solid var(--border-subtle);
           border-radius: var(--radius-sm);
+          padding: 10px 12px;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .matrix-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+
+        .matrix-title {
+          font-size: 11px;
+          font-weight: 500;
+          color: var(--text-muted);
+        }
+
+        .matrix-status {
+          font-size: 10.5px;
+          font-weight: 600;
+        }
+        .status-pass { color: var(--status-success-text); }
+        .status-fail { color: var(--status-error-text); }
+        .status-warn { color: var(--status-warning-text); }
+        .status-neutral { color: var(--text-secondary); }
+
+        .matrix-meta {
+          font-size: 11px;
           color: var(--text-secondary);
-          font-size: 11.5px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        /* Developer JSON Drawer */
+        .raw-json-panel {
+          border-top: 1px solid var(--border-subtle);
+          padding-top: 10px;
+        }
+
+        .raw-json-header-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 6px 8px;
+          background: transparent;
+          border: 1px solid transparent;
+          border-radius: var(--radius-xs);
+          color: var(--text-muted);
+          font-size: 12px;
+          cursor: pointer;
+          transition: all 0.12s ease;
+        }
+        .raw-json-header-btn:hover {
+          color: var(--text-primary);
+          background-color: var(--bg-hover);
+        }
+
+        .json-btn-left {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .json-expand-label {
+          font-size: 11px;
+          color: var(--text-tertiary);
+        }
+
+        .raw-json-code {
+          margin-top: 8px;
+          padding: 12px;
+          background-color: #070809;
+          border: 1px solid var(--border-subtle);
+          border-radius: var(--radius-sm);
+          font-size: 11px;
+          color: #B4B9C2;
           overflow-x: auto;
-          max-height: 220px;
+          line-height: 1.5;
         }
 
+        /* History Section */
         .history-section {
-          margin-top: var(--space-8);
+          margin-top: var(--space-6);
         }
 
-        .history-header-row {
+        .history-header {
           display: flex;
           align-items: flex-end;
           justify-content: space-between;
-          margin-bottom: var(--space-4);
-          gap: var(--space-4);
+          margin-bottom: var(--space-3);
           flex-wrap: wrap;
+          gap: 10px;
         }
 
-        .history-section-title {
-          font-size: 16px;
+        .history-title {
+          font-size: 14.5px;
           font-weight: 600;
           color: var(--text-primary);
         }
 
-        .history-section-subtitle {
-          font-size: 12.5px;
+        .history-subtitle {
+          font-size: 12px;
           color: var(--text-muted);
           margin-top: 2px;
         }
@@ -866,12 +819,95 @@ export const SingleVerifyPage: React.FC = () => {
         .history-controls {
           display: flex;
           align-items: center;
-          gap: var(--space-2);
-          flex-wrap: wrap;
+          gap: 8px;
         }
 
-        .history-search {
-          width: 220px;
+        .history-search-wrap {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+
+        .search-icon-left {
+          position: absolute;
+          left: 8px;
+          color: var(--text-muted);
+          pointer-events: none;
+        }
+
+        .history-search-input {
+          background-color: var(--bg-input);
+          border: 1px solid var(--border-standard);
+          border-radius: var(--radius-sm);
+          color: var(--text-primary);
+          font-size: 12px;
+          padding: 4px 10px 4px 26px;
+          outline: none;
+          width: 190px;
+          transition: border-color 0.12s ease;
+        }
+        .history-search-input:focus {
+          border-color: var(--border-focus);
+        }
+
+        .clear-history-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 4px 8px;
+          background: transparent;
+          border: 1px solid var(--border-standard);
+          border-radius: var(--radius-sm);
+          color: var(--text-muted);
+          font-size: 11.5px;
+          cursor: pointer;
+          transition: all 0.12s ease;
+        }
+        .clear-history-btn:hover {
+          color: var(--status-error-text);
+          border-color: var(--status-error-border);
+        }
+
+        .history-row {
+          cursor: pointer;
+        }
+
+        .history-mx {
+          color: var(--text-muted);
+          font-size: 11.5px;
+          max-width: 170px;
+          display: inline-block;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .history-action-btn {
+          background: transparent;
+          border: none;
+          color: var(--text-tertiary);
+          cursor: pointer;
+          padding: 4px;
+          border-radius: 3px;
+          transition: color 0.12s ease;
+        }
+        .history-row:hover .history-action-btn {
+          color: var(--text-muted);
+        }
+        .history-action-btn:hover {
+          color: var(--status-error-text) !important;
+        }
+
+        .empty-history-cell {
+          text-align: center;
+          padding: 30px;
+          color: var(--text-muted);
+        }
+
+        @media (max-width: 900px) {
+          .diagnostics-matrix {
+            grid-template-columns: repeat(2, 1fr);
+          }
         }
       `}</style>
     </div>

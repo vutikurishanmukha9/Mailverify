@@ -13,15 +13,12 @@ import {
   FileText,
   Copy,
   Check,
-  ShieldCheck,
-  AlertTriangle,
-  XCircle,
   Eye,
   X
 } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import { DeliverabilityBadge } from '../components/common/Badge';
-import { Card, CardBody, CardHeader } from '../components/common/Card';
+import { Card } from '../components/common/Card';
 import { Modal } from '../components/common/Modal';
 
 export const BulkVerifyPage: React.FC = () => {
@@ -78,7 +75,7 @@ export const BulkVerifyPage: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'mailverify_sample_lead_list.csv';
+    a.download = 'mailverify_sample_leads.csv';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -133,8 +130,8 @@ export const BulkVerifyPage: React.FC = () => {
 
       addToast({
         type: 'success',
-        title: 'File Parsed Successfully',
-        message: `Extracted ${finalEmails.length.toLocaleString()} unique email addresses from ${file.name}.`
+        title: 'File Parsed',
+        message: `Extracted ${finalEmails.length.toLocaleString()} unique contacts from ${file.name}.`
       });
     };
     reader.readAsText(file);
@@ -158,19 +155,16 @@ export const BulkVerifyPage: React.FC = () => {
         addToast({
           type: 'error',
           title: 'Google Sheets URL Required',
-          message: 'Please paste a valid Google Sheets URL.'
+          message: 'Please provide a valid shareable spreadsheet link.'
         });
         return;
       }
       emailList = [
-        'lead.founder@techstars.co',
-        'sarah.vp@acmecloud.com',
-        'support@inboxzero.app',
-        'temp.burner99@mailinator.com',
-        'contact@growthleads.io',
-        'director@enterprise-corp.com',
-        'johnny.test@invalid-domain-xyz.com',
-        'alex.lead@venturefund.vc'
+        'jordan.lead@enterprise.com',
+        'marcus.growth@scaleup.co',
+        'priya.eng@stripe.com',
+        'dev.ops@catchall-company.io',
+        'invalid.alias@nowhere-domain.xyz'
       ];
     }
 
@@ -178,7 +172,7 @@ export const BulkVerifyPage: React.FC = () => {
       addToast({
         type: 'error',
         title: 'No Valid Emails Found',
-        message: 'Please provide at least one valid email address to verify.'
+        message: 'Please provide at least one valid recipient address.'
       });
       return;
     }
@@ -186,17 +180,16 @@ export const BulkVerifyPage: React.FC = () => {
     if (subscription.creditsRemaining < emailList.length) {
       addToast({
         type: 'error',
-        title: 'Insufficient Credit Balance',
-        message: `This job requires ${emailList.length.toLocaleString()} credits. Current balance: ${subscription.creditsRemaining.toLocaleString()}.`
+        title: 'Insufficient Credits',
+        message: `You need ${emailList.length} credits. You currently have ${subscription.creditsRemaining}.`
       });
       return;
     }
 
     setIsProcessing(true);
-
     setTimeout(() => {
       const newJob = createBulkJob(
-        jobName || (creationTab === 'csv' ? uploadedFileName || 'CSV Batch' : 'Manual Outreach List'),
+        jobName || (uploadedFileName ? uploadedFileName.replace(/\.[^/.]+$/, '') : `List_${Date.now()}`),
         creationTab,
         emailList
       );
@@ -243,8 +236,8 @@ export const BulkVerifyPage: React.FC = () => {
 
     addToast({
       type: 'success',
-      title: 'Clean List Exported',
-      message: `Downloaded ${recordsToExport.length.toLocaleString()} verified records (${filter}).`
+      title: 'List Exported',
+      message: `Downloaded ${recordsToExport.length.toLocaleString()} records (${filter}).`
     });
   };
 
@@ -259,7 +252,7 @@ export const BulkVerifyPage: React.FC = () => {
   const totalPages = Math.ceil(filteredRecords.length / pageSize) || 1;
   const paginatedRecords = filteredRecords.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-  // Proportions for segmented distribution bar
+  // Deliverability percentages
   const deliverablePct = currentJob
     ? ((currentJob.deliverableCount / (currentJob.totalCount || 1)) * 100).toFixed(1)
     : '0';
@@ -272,7 +265,7 @@ export const BulkVerifyPage: React.FC = () => {
 
   return (
     <div className="page-container">
-      {/* Hidden button for trigger */}
+      {/* Hidden button for external trigger */}
       <button
         id="trigger-bulk-upload-btn"
         style={{ display: 'none' }}
@@ -282,14 +275,10 @@ export const BulkVerifyPage: React.FC = () => {
       {/* Page Header */}
       <div className="page-header">
         <div className="page-header-content">
-          <div className="bulk-badge-row">
-            <span className="badge-technical">HIGH-THROUGHPUT ENGINE</span>
-            <span className="badge-meta font-mono">12,000 / min capacity</span>
-          </div>
           <h1 className="page-header-title">Bulk Email Verification</h1>
           <p className="page-header-description">
-            Upload CSV lead lists, connect Google Sheets, or paste contacts to scrub invalid,
-            disposable, and high-risk spam traps across high-volume outreach campaigns.
+            Clean and verify CSV lead lists, connect Google Sheets, or paste contacts to scrub
+            invalid mailboxes, disposable addresses, and protect domain deliverability.
           </p>
         </div>
         <div className="page-header-actions">
@@ -312,100 +301,112 @@ export const BulkVerifyPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Unified Deliverability Breakdown & Projections Console */}
+      {/* Sleek Deliverability Metrics Overview Strip */}
       {currentJob && (
-        <Card className="distribution-console-card">
-          <CardBody compact>
-            <div className="distribution-top-row">
-              <div className="distribution-heading-group">
-                <span className="distribution-title">DELIVERABILITY PERFORMANCE & PROJECTIONS</span>
-                <span className="distribution-job-name font-mono">{currentJob.name}</span>
+        <div className="overview-strip-container">
+          <div className="overview-strip-header">
+            <div className="overview-title-group">
+              <span className="overview-file-name font-mono">{currentJob.name}</span>
+              <span className="overview-meta-tag font-mono">
+                {currentJob.sourceType.toUpperCase()}
+              </span>
+              <span className="overview-status-pill font-mono">
+                <CheckCircle2 size={11} /> Completed
+              </span>
+            </div>
+            <div className="overview-actions-group">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleExportJob(currentJob, 'deliverable')}
+                leftIcon={<Download size={12} />}
+              >
+                Export Clean ({currentJob.deliverableCount.toLocaleString()})
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleExportJob(currentJob, 'all')}
+              >
+                Export All ({currentJob.totalCount.toLocaleString()})
+              </Button>
+            </div>
+          </div>
+
+          {/* 4 Partitioned Metric Columns with vertical hairline dividers */}
+          <div className="overview-metrics-grid">
+            <div className="overview-metric-col">
+              <div className="metric-label-row">
+                <span className="metric-dot dot-neutral" />
+                <span className="metric-label">TOTAL ANALYZED</span>
               </div>
-              <div className="distribution-badge-group">
-                <span className="badge-status-completed font-mono">
-                  <CheckCircle2 size={12} /> 100% PROCESSED
-                </span>
-                <span className="badge-source-tag font-mono">
-                  {currentJob.sourceType.toUpperCase()}
-                </span>
+              <div className="metric-value font-mono tabular-nums">
+                {currentJob.totalCount.toLocaleString()}
+              </div>
+              <div className="metric-subtext">
+                100% processed · 0 syntax errors
               </div>
             </div>
 
-            {/* Proportional Segmented Delivery Bar */}
-            <div className="segmented-distribution-bar">
-              <div
-                className="seg-bar-fill deliverable"
-                style={{ width: `${deliverablePct}%` }}
-                title={`Deliverable: ${currentJob.deliverableCount.toLocaleString()} (${deliverablePct}%)`}
-              />
-              <div
-                className="seg-bar-fill risky"
-                style={{ width: `${riskyPct}%` }}
-                title={`Risky / Catch-All: ${currentJob.riskyCount.toLocaleString()} (${riskyPct}%)`}
-              />
-              <div
-                className="seg-bar-fill undeliverable"
-                style={{ width: `${undeliverablePct}%` }}
-                title={`Undeliverable: ${currentJob.undeliverableCount.toLocaleString()} (${undeliverablePct}%)`}
-              />
-            </div>
-
-            {/* 4 Partitioned Stat Columns with Hairline Borders */}
-            <div className="distribution-metrics-grid">
-              <div className="distribution-col">
-                <div className="distribution-col-label">
-                  <span className="stat-dot dot-neutral" />
-                  <span>TOTAL ANALYZED</span>
-                </div>
-                <div className="distribution-col-value font-mono tabular-nums">
-                  {currentJob.totalCount.toLocaleString()}
-                </div>
-                <div className="distribution-col-meta">
-                  100% completed · 0 syntax errors
-                </div>
+            <div className="overview-metric-col">
+              <div className="metric-label-row">
+                <span className="metric-dot dot-success" />
+                <span className="metric-label">DELIVERABLE</span>
               </div>
-
-              <div className="distribution-col">
-                <div className="distribution-col-label">
-                  <span className="stat-dot dot-success" />
-                  <span>DELIVERABLE</span>
-                </div>
-                <div className="distribution-col-value font-mono tabular-nums text-success">
-                  {currentJob.deliverableCount.toLocaleString()}
-                </div>
-                <div className="distribution-col-meta">
-                  {deliverablePct}% · Safe for primary domain
-                </div>
+              <div className="metric-value font-mono tabular-nums text-success">
+                {currentJob.deliverableCount.toLocaleString()}
               </div>
-
-              <div className="distribution-col">
-                <div className="distribution-col-label">
-                  <span className="stat-dot dot-warning" />
-                  <span>RISKY / CATCH-ALL</span>
-                </div>
-                <div className="distribution-col-value font-mono tabular-nums text-warning">
-                  {currentJob.riskyCount.toLocaleString()}
-                </div>
-                <div className="distribution-col-meta">
-                  {riskyPct}% · Catch-all / low engagement
-                </div>
-              </div>
-
-              <div className="distribution-col">
-                <div className="distribution-col-label">
-                  <span className="stat-dot dot-error" />
-                  <span>UNDELIVERABLE</span>
-                </div>
-                <div className="distribution-col-value font-mono tabular-nums text-error">
-                  {currentJob.undeliverableCount.toLocaleString()}
-                </div>
-                <div className="distribution-col-meta">
-                  {undeliverablePct}% · Hard bounces prevented
-                </div>
+              <div className="metric-subtext">
+                {deliverablePct}% · Safe for primary domain
               </div>
             </div>
-          </CardBody>
-        </Card>
+
+            <div className="overview-metric-col">
+              <div className="metric-label-row">
+                <span className="metric-dot dot-warning" />
+                <span className="metric-label">RISKY / CATCH-ALL</span>
+              </div>
+              <div className="metric-value font-mono tabular-nums text-warning">
+                {currentJob.riskyCount.toLocaleString()}
+              </div>
+              <div className="metric-subtext">
+                {riskyPct}% · Catch-all / low engagement
+              </div>
+            </div>
+
+            <div className="overview-metric-col">
+              <div className="metric-label-row">
+                <span className="metric-dot dot-error" />
+                <span className="metric-label">UNDELIVERABLE</span>
+              </div>
+              <div className="metric-value font-mono tabular-nums text-error">
+                {currentJob.undeliverableCount.toLocaleString()}
+              </div>
+              <div className="metric-subtext">
+                {undeliverablePct}% · Bounces prevented
+              </div>
+            </div>
+          </div>
+
+          {/* Ultra-thin deliverability distribution track */}
+          <div className="overview-progress-track">
+            <div
+              className="track-segment track-deliverable"
+              style={{ width: `${deliverablePct}%` }}
+              title={`Deliverable: ${currentJob.deliverableCount.toLocaleString()} (${deliverablePct}%)`}
+            />
+            <div
+              className="track-segment track-risky"
+              style={{ width: `${riskyPct}%` }}
+              title={`Risky: ${currentJob.riskyCount.toLocaleString()} (${riskyPct}%)`}
+            />
+            <div
+              className="track-segment track-undeliverable"
+              style={{ width: `${undeliverablePct}%` }}
+              title={`Undeliverable: ${currentJob.undeliverableCount.toLocaleString()} (${undeliverablePct}%)`}
+            />
+          </div>
+        </div>
       )}
 
       {/* Two-Column Master-Detail Layout */}
@@ -417,15 +418,14 @@ export const BulkVerifyPage: React.FC = () => {
               <span className="jobs-sidebar-title">Verification Jobs</span>
               <span className="jobs-sidebar-count font-mono">{bulkJobs.length}</span>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
+            <button
               onClick={() => setIsModalOpen(true)}
-              className="btn-icon-sm"
+              className="jobs-add-btn"
               title="Upload new verification list"
+              aria-label="Upload new list"
             >
-              <Plus size={12} />
-            </Button>
+              <Plus size={13} />
+            </button>
           </div>
 
           <div className="jobs-list">
@@ -451,34 +451,12 @@ export const BulkVerifyPage: React.FC = () => {
                         {job.name}
                       </span>
                     </div>
-                    <span className="job-badge-completed font-mono">Completed</span>
+                    <span className="job-pill-done font-mono">100%</span>
                   </div>
 
-                  <div className="job-card-stats tabular-nums font-mono">
-                    <span className="text-secondary">{job.totalCount.toLocaleString()} emails</span>
-                    <span className="text-success font-bold">{deliverableRatio}% Deliverable</span>
-                  </div>
-
-                  {/* Micro delivery ratio bar */}
-                  <div className="job-progress-split">
-                    <div
-                      style={{
-                        width: `${(job.deliverableCount / job.totalCount) * 100}%`,
-                        backgroundColor: 'var(--status-success)'
-                      }}
-                    />
-                    <div
-                      style={{
-                        width: `${(job.riskyCount / job.totalCount) * 100}%`,
-                        backgroundColor: 'var(--status-warning)'
-                      }}
-                    />
-                    <div
-                      style={{
-                        width: `${(job.undeliverableCount / job.totalCount) * 100}%`,
-                        backgroundColor: 'var(--status-error)'
-                      }}
-                    />
+                  <div className="job-card-meta tabular-nums font-mono">
+                    <span>{job.totalCount.toLocaleString()} contacts</span>
+                    <span className="meta-deliverable">{deliverableRatio}% clean</span>
                   </div>
 
                   <div className="job-card-footer">
@@ -494,14 +472,22 @@ export const BulkVerifyPage: React.FC = () => {
                         onClick={() => handleExportJob(job, 'deliverable')}
                         title="Download clean emails"
                       >
-                        <Download size={12} />
+                        <Download size={11} />
                       </button>
                       <button
                         className="job-action-btn delete-btn"
-                        onClick={() => deleteBulkJob(job.id)}
-                        title="Remove job"
+                        onClick={() => {
+                          if (confirm(`Remove verification job "${job.name}"?`)) {
+                            deleteBulkJob(job.id);
+                            if (selectedJobId === job.id) {
+                              const remaining = bulkJobs.filter((j) => j.id !== job.id);
+                              setSelectedJobId(remaining.length > 0 ? remaining[0].id : null);
+                            }
+                          }
+                        }}
+                        title="Delete job"
                       >
-                        <Trash2 size={12} />
+                        <Trash2 size={11} />
                       </button>
                     </div>
                   </div>
@@ -511,571 +497,393 @@ export const BulkVerifyPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column: Selected Job Detailed Explorer */}
-        <div className="bulk-records-main">
+        {/* Right Column: Detailed Verification Records Table */}
+        <div className="bulk-records-container">
           {currentJob ? (
-            <Card>
-              <CardHeader
-                title={
-                  <div className="records-header-info">
-                    <div className="records-title-group">
-                      <span className="records-job-name font-mono">{currentJob.name}</span>
-                      <span className="records-source-badge font-mono">
-                        {currentJob.sourceType.toUpperCase()}
-                      </span>
-                      <span className="records-id-badge font-mono">{currentJob.id}</span>
-                    </div>
-                    <div className="records-time-meta font-mono">
-                      Completed {new Date(currentJob.completedAt || currentJob.createdAt).toLocaleDateString([], {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric'
-                      })}
-                    </div>
-                  </div>
-                }
-                action={
-                  <div className="records-header-actions">
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => handleExportJob(currentJob, 'deliverable')}
-                      leftIcon={<Download size={13} />}
-                      title="Export clean deliverable records"
-                    >
-                      Export Clean ({currentJob.deliverableCount.toLocaleString()})
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleExportJob(currentJob, 'all')}
-                      leftIcon={<Download size={13} />}
-                      title="Export all original records"
-                    >
-                      Export All ({currentJob.totalCount.toLocaleString()})
-                    </Button>
-                  </div>
-                }
-              />
-              <CardBody compact>
-                {/* Search & Filter Toolbar */}
-                <div className="table-filter-bar">
-                  <div className="input-with-icon table-search-input">
-                    <Search size={14} className="input-icon-left" />
-                    <input
-                      type="text"
-                      className="input input-sm"
-                      placeholder="Search email or mail host... (/)"
-                      value={recordsSearch}
-                      onChange={(e) => {
-                        setRecordsSearch(e.target.value);
-                        setCurrentPage(1);
-                      }}
-                    />
-                    {recordsSearch && (
-                      <button
-                        className="search-clear-btn"
-                        onClick={() => setRecordsSearch('')}
-                        title="Clear filter"
-                      >
-                        <X size={12} />
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="tab-pill-nav">
+            <Card className="records-card">
+              {/* Table Toolbar */}
+              <div className="records-toolbar">
+                <div className="records-search-wrapper">
+                  <Search size={14} className="records-search-icon" />
+                  <input
+                    type="text"
+                    className="records-search-input"
+                    placeholder="Search email address or mail host..."
+                    value={recordsSearch}
+                    onChange={(e) => {
+                      setRecordsSearch(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                  />
+                  {recordsSearch && (
                     <button
-                      className={`tab-pill-btn ${recordsStatusFilter === 'all' ? 'active' : ''}`}
-                      onClick={() => {
-                        setRecordsStatusFilter('all');
-                        setCurrentPage(1);
-                      }}
+                      className="search-clear-btn"
+                      onClick={() => setRecordsSearch('')}
+                      aria-label="Clear search"
                     >
-                      All ({currentJob.records.length})
+                      <X size={12} />
                     </button>
-                    <button
-                      className={`tab-pill-btn ${recordsStatusFilter === 'deliverable' ? 'active' : ''}`}
-                      onClick={() => {
-                        setRecordsStatusFilter('deliverable');
-                        setCurrentPage(1);
-                      }}
-                    >
-                      <span className="filter-pill-dot dot-success" />
-                      Deliverable ({currentJob.deliverableCount})
-                    </button>
-                    <button
-                      className={`tab-pill-btn ${recordsStatusFilter === 'risky' ? 'active' : ''}`}
-                      onClick={() => {
-                        setRecordsStatusFilter('risky');
-                        setCurrentPage(1);
-                      }}
-                    >
-                      <span className="filter-pill-dot dot-warning" />
-                      Risky ({currentJob.riskyCount})
-                    </button>
-                    <button
-                      className={`tab-pill-btn ${recordsStatusFilter === 'undeliverable' ? 'active' : ''}`}
-                      onClick={() => {
-                        setRecordsStatusFilter('undeliverable');
-                        setCurrentPage(1);
-                      }}
-                    >
-                      <span className="filter-pill-dot dot-error" />
-                      Undeliverable ({currentJob.undeliverableCount})
-                    </button>
-                  </div>
+                  )}
                 </div>
 
-                {/* High-Density Enterprise Data Table */}
-                <div className="table-container" style={{ border: 'none', borderRadius: 0 }}>
-                  <table className="table">
-                    <thead>
-                      <tr>
-                        <th style={{ width: '28%' }}>Recipient Email</th>
-                        <th style={{ width: '15%' }}>Verdict Status</th>
-                        <th style={{ width: '15%' }}>Confidence</th>
-                        <th style={{ width: '18%' }}>Mail Server (MX)</th>
-                        <th style={{ width: '18%' }}>Flags & Diagnostics</th>
-                        <th style={{ width: '6%', textAlign: 'right' }}>Inspect</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {paginatedRecords.length === 0 ? (
-                        <tr>
-                          <td colSpan={6} style={{ textAlign: 'center', padding: '48px 14px' }}>
-                            <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>
-                              No records found matching current search query or verdict filter.
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              style={{ marginTop: 8 }}
-                              onClick={() => {
-                                setRecordsSearch('');
-                                setRecordsStatusFilter('all');
-                              }}
-                            >
-                              Reset Active Filters
-                            </Button>
-                          </td>
-                        </tr>
-                      ) : (
-                        paginatedRecords.map((rec) => (
+                <div className="records-filter-pills">
+                  <button
+                    className={`filter-pill ${recordsStatusFilter === 'all' ? 'active' : ''}`}
+                    onClick={() => {
+                      setRecordsStatusFilter('all');
+                      setCurrentPage(1);
+                    }}
+                  >
+                    All ({currentJob.totalCount.toLocaleString()})
+                  </button>
+                  <button
+                    className={`filter-pill ${recordsStatusFilter === 'deliverable' ? 'active' : ''}`}
+                    onClick={() => {
+                      setRecordsStatusFilter('deliverable');
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <span className="filter-dot dot-success" />
+                    Deliverable ({currentJob.deliverableCount.toLocaleString()})
+                  </button>
+                  <button
+                    className={`filter-pill ${recordsStatusFilter === 'risky' ? 'active' : ''}`}
+                    onClick={() => {
+                      setRecordsStatusFilter('risky');
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <span className="filter-dot dot-warning" />
+                    Risky ({currentJob.riskyCount.toLocaleString()})
+                  </button>
+                  <button
+                    className={`filter-pill ${recordsStatusFilter === 'undeliverable' ? 'active' : ''}`}
+                    onClick={() => {
+                      setRecordsStatusFilter('undeliverable');
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <span className="filter-dot dot-error" />
+                    Undeliverable ({currentJob.undeliverableCount.toLocaleString()})
+                  </button>
+                </div>
+              </div>
+
+              {/* Data Table */}
+              <div className="table-container" style={{ border: 'none', borderRadius: 0 }}>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '34%' }}>Recipient Address</th>
+                      <th style={{ width: '18%' }}>Deliverability</th>
+                      <th style={{ width: '12%' }}>Score</th>
+                      <th style={{ width: '24%' }}>MX Host</th>
+                      <th style={{ width: '12%', textAlign: 'right' }}>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedRecords.length > 0 ? (
+                      paginatedRecords.map((record) => {
+                        const emailParts = record.email.split('@');
+                        const local = emailParts[0];
+                        const domain = emailParts[1] ? `@${emailParts[1]}` : '';
+
+                        return (
                           <tr
-                            key={rec.id}
-                            className="clickable-row"
-                            onClick={() => setInspectedRecord(rec)}
+                            key={record.id}
+                            className="record-row"
+                            onClick={() => setInspectedRecord(record)}
                           >
-                            <td className="primary-cell font-mono">
-                              <div className="email-cell-wrapper">
-                                <span className="email-text" title={rec.email}>{rec.email}</span>
+                            <td className="primary-cell">
+                              <div className="record-email-cell">
+                                <span className="email-local">{local}</span>
+                                <span className="email-domain">{domain}</span>
                                 <button
-                                  className="email-copy-btn"
+                                  className="email-copy-icon-btn"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleCopyEmail(rec.email);
+                                    handleCopyEmail(record.email);
                                   }}
                                   title="Copy address"
                                 >
-                                  {copiedEmail === rec.email ? (
-                                    <Check size={12} className="text-success" />
+                                  {copiedEmail === record.email ? (
+                                    <Check size={11} className="text-success" />
                                   ) : (
-                                    <Copy size={12} />
+                                    <Copy size={11} />
                                   )}
                                 </button>
                               </div>
                             </td>
                             <td>
-                              <DeliverabilityBadge status={rec.status} />
-                            </td>
-                            <td className="font-mono tabular-nums">
-                              <div className="score-meter-cell">
-                                <span
-                                  style={{
-                                    fontWeight: 600,
-                                    color:
-                                      rec.score > 80
-                                        ? 'var(--status-success-text)'
-                                        : rec.score > 50
-                                        ? 'var(--status-warning-text)'
-                                        : 'var(--status-error-text)'
-                                  }}
-                                >
-                                  {rec.score}/100
-                                </span>
-                                <div className="mini-score-track">
-                                  <div
-                                    className="mini-score-fill"
-                                    style={{
-                                      width: `${rec.score}%`,
-                                      backgroundColor:
-                                        rec.score > 80
-                                          ? 'var(--status-success)'
-                                          : rec.score > 50
-                                          ? 'var(--status-warning)'
-                                          : 'var(--status-error)'
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            </td>
-                            <td className="font-mono" style={{ fontSize: 12 }}>
-                              <span className="mx-text" title={rec.mxHost}>
-                                {rec.mxHost}
-                              </span>
+                              <DeliverabilityBadge status={record.status} />
                             </td>
                             <td>
-                              <div className="flags-diag-cell">
-                                {rec.isDisposable && (
-                                  <span className="badge-flag-error font-mono">
-                                    <AlertTriangle size={10} /> Disposable
-                                  </span>
-                                )}
-                                {rec.isRoleBased && (
-                                  <span className="badge-flag-warning font-mono">
-                                    Role
-                                  </span>
-                                )}
-                                {!rec.isDisposable && !rec.isRoleBased && (
-                                  <span className="diagnostic-summary-cell" title={rec.reason}>
-                                    {rec.reason}
-                                  </span>
-                                )}
+                              <div className="record-score-cell tabular-nums font-mono">
+                                <span>{record.score}</span>
+                                <span className="score-max">/100</span>
                               </div>
+                            </td>
+                            <td>
+                              <span className="record-mx-host font-mono" title={record.mxHost}>
+                                {record.mxHost}
+                              </span>
                             </td>
                             <td style={{ textAlign: 'right' }}>
                               <button
-                                className="row-inspect-btn"
+                                className="inspect-row-btn"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setInspectedRecord(rec);
+                                  setInspectedRecord(record);
                                 }}
-                                title="Inspect diagnostic trace"
                               >
-                                <Eye size={13} />
+                                <Eye size={12} />
+                                <span>Inspect</span>
                               </button>
                             </td>
                           </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                        );
+                      })
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="empty-table-cell">
+                          <p>No records matched your search criteria.</p>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
 
-                {/* Pagination Toolbar */}
-                <div className="table-pagination">
-                  <div className="font-mono" style={{ fontSize: 12 }}>
-                    Showing {(currentPage - 1) * pageSize + 1} to{' '}
-                    {Math.min(currentPage * pageSize, filteredRecords.length)} of{' '}
-                    {filteredRecords.length} records
-                  </div>
-                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={currentPage <= 1}
-                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    >
-                      Previous
-                    </Button>
-                    <span className="pagination-page-indicator font-mono">
-                      Page {currentPage} of {totalPages}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={currentPage >= totalPages}
-                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                    >
-                      Next
-                    </Button>
-                  </div>
+              {/* Pagination Bar */}
+              <div className="table-pagination">
+                <span className="pagination-info">
+                  Showing {Math.min((currentPage - 1) * pageSize + 1, filteredRecords.length)}–
+                  {Math.min(currentPage * pageSize, filteredRecords.length)} of{' '}
+                  {filteredRecords.length.toLocaleString()} records
+                </span>
+                <div className="pagination-controls">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  >
+                    Previous
+                  </Button>
+                  <span className="pagination-current font-mono">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage >= totalPages}
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  >
+                    Next
+                  </Button>
                 </div>
-              </CardBody>
+              </div>
             </Card>
           ) : (
-            <Card>
-              <CardBody style={{ textAlign: 'center', padding: '64px 20px' }}>
-                <Layers size={36} style={{ color: 'var(--text-tertiary)', marginBottom: 12 }} />
-                <h3>No Verification Jobs Available</h3>
-                <p style={{ marginTop: 6, marginBottom: 16 }}>
-                  Upload a CSV file or connect a Google Sheet to start your first verification job.
-                </p>
+            <Card className="records-card empty-state-card">
+              <div className="empty-content">
+                <Layers size={28} className="empty-icon" />
+                <h3>No Verification Jobs Found</h3>
+                <p>Upload a CSV file or paste email contacts to start your first batch scrub.</p>
                 <Button
                   variant="primary"
+                  size="sm"
                   onClick={() => setIsModalOpen(true)}
-                  leftIcon={<Plus size={14} />}
+                  leftIcon={<Plus size={13} />}
                 >
                   Create New Job
                 </Button>
-              </CardBody>
+              </div>
             </Card>
           )}
         </div>
       </div>
 
-      {/* Record Deep Telemetry Inspection Modal */}
+      {/* Deep Telemetry Record Inspector Modal */}
       {inspectedRecord && (
         <Modal
-          isOpen={!!inspectedRecord}
+          isOpen={true}
           onClose={() => setInspectedRecord(null)}
-          title="Diagnostic Verification Telemetry"
-          maxWidth={540}
-          footer={
-            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-              <div className="font-mono text-muted" style={{ fontSize: 11.5 }}>
-                Checked at {new Date(inspectedRecord.checkedAt).toLocaleTimeString()}
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => handleCopyEmail(inspectedRecord.email)}
-                  leftIcon={copiedEmail === inspectedRecord.email ? <Check size={12} /> : <Copy size={12} />}
-                >
-                  {copiedEmail === inspectedRecord.email ? 'Copied' : 'Copy Email'}
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => setInspectedRecord(null)}>
-                  Close
-                </Button>
-              </div>
-            </div>
-          }
+          title="Telemetry Diagnostics"
         >
-          <div className="telemetry-modal-body">
-            {/* Header Identity Row */}
-            <div className="telemetry-id-card">
-              <div>
-                <div className="telemetry-email font-mono">{inspectedRecord.email}</div>
-                <div className="telemetry-mx font-mono text-muted">
-                  MX: {inspectedRecord.mxHost}
-                </div>
-              </div>
-              <DeliverabilityBadge status={inspectedRecord.status} />
+          <div className="telemetry-inspector">
+            <div className="telemetry-header">
+              <div className="telemetry-email font-mono">{inspectedRecord.email}</div>
+              <DeliverabilityBadge
+                status={inspectedRecord.status}
+                score={inspectedRecord.score}
+              />
             </div>
 
-            {/* Score & Verdict Banner */}
-            <div className="telemetry-score-banner">
-              <div className="telemetry-score-box">
-                <span className="telemetry-score-val font-mono">{inspectedRecord.score}/100</span>
-                <span className="telemetry-score-lbl">Quality Score</span>
+            <div className="telemetry-reason-box">
+              <div className="reason-label">Verdict:</div>
+              <div className="reason-val">{inspectedRecord.reason}</div>
+            </div>
+
+            <div className="telemetry-grid">
+              <div className="telemetry-stat-tile">
+                <span className="tile-title">SMTP Mailbox</span>
+                <span className={`tile-val ${inspectedRecord.status === 'deliverable' ? 'text-success' : inspectedRecord.status === 'risky' ? 'text-warning' : 'text-error'}`}>
+                  {inspectedRecord.status === 'deliverable' ? '250 Handshake OK' : inspectedRecord.status === 'risky' ? 'Catch-all / Greylisted' : '550 User Unknown'}
+                </span>
               </div>
-              <div className="telemetry-reason-box">
-                <div className="telemetry-reason-title">Primary Diagnostic Verdict</div>
-                <div className="telemetry-reason-desc">{inspectedRecord.reason}</div>
+              <div className="telemetry-stat-tile">
+                <span className="tile-title">DNS MX Host</span>
+                <span className="tile-val font-mono">{inspectedRecord.mxHost}</span>
+              </div>
+              <div className="telemetry-stat-tile">
+                <span className="tile-title">Disposable Provider</span>
+                <span className={`tile-val ${inspectedRecord.isDisposable ? 'text-error' : 'text-success'}`}>
+                  {inspectedRecord.isDisposable ? 'High-Risk Disposable' : 'Verified Clean'}
+                </span>
+              </div>
+              <div className="telemetry-stat-tile">
+                <span className="tile-title">Role-based Account</span>
+                <span className={`tile-val ${inspectedRecord.isRoleBased ? 'text-warning' : 'text-secondary'}`}>
+                  {inspectedRecord.isRoleBased ? 'Role / Department (support@)' : 'Individual Employee'}
+                </span>
               </div>
             </div>
 
-            {/* 6-Point Inspection Checklist */}
-            <div className="telemetry-checklist">
-              <div className="checklist-row">
-                <span className="checklist-label">RFC 5322 Syntax Standard</span>
-                <span className="checklist-status text-success font-mono">
-                  <ShieldCheck size={13} /> VALID
-                </span>
-              </div>
-              <div className="checklist-row">
-                <span className="checklist-label">DNS MX Record Resolution</span>
-                <span className="checklist-status text-success font-mono">
-                  <CheckCircle2 size={13} /> ACTIVE ({inspectedRecord.mxHost})
-                </span>
-              </div>
-              <div className="checklist-row">
-                <span className="checklist-label">Disposable / Burner Provider</span>
-                <span
-                  className={`checklist-status font-mono ${
-                    inspectedRecord.isDisposable ? 'text-error' : 'text-success'
-                  }`}
-                >
-                  {inspectedRecord.isDisposable ? (
-                    <>
-                      <XCircle size={13} /> FLAGGED
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 size={13} /> CLEAN
-                    </>
-                  )}
-                </span>
-              </div>
-              <div className="checklist-row">
-                <span className="checklist-label">Role-based Account Classification</span>
-                <span
-                  className={`checklist-status font-mono ${
-                    inspectedRecord.isRoleBased ? 'text-warning' : 'text-success'
-                  }`}
-                >
-                  {inspectedRecord.isRoleBased ? (
-                    <>
-                      <AlertTriangle size={13} /> ROLE / GENERIC
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 size={13} /> INDIVIDUAL
-                    </>
-                  )}
-                </span>
-              </div>
-              <div className="checklist-row">
-                <span className="checklist-label">SMTP RCPT TO Mailbox Handshake</span>
-                <span
-                  className={`checklist-status font-mono ${
-                    inspectedRecord.status === 'deliverable'
-                      ? 'text-success'
-                      : inspectedRecord.status === 'risky'
-                      ? 'text-warning'
-                      : 'text-error'
-                  }`}
-                >
-                  {inspectedRecord.status === 'deliverable'
-                    ? '250 RECIPIENT OK'
-                    : inspectedRecord.status === 'risky'
-                    ? 'ACCEPT ALL DETECTED'
-                    : '550 MAILBOX NOT FOUND'}
-                </span>
-              </div>
+            <div className="telemetry-actions">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleCopyEmail(inspectedRecord.email)}
+                leftIcon={<Copy size={12} />}
+              >
+                Copy Address
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setInspectedRecord(null)}
+              >
+                Done
+              </Button>
             </div>
           </div>
         </Modal>
       )}
 
-      {/* New Bulk Job Ingestion Modal */}
+      {/* New Verification Job Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Create Bulk Verification Job"
-        maxWidth={620}
+        title="New Verification Job"
         footer={
-          <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-            <div className="job-credit-calc">
-              <span className="text-secondary font-mono" style={{ fontSize: 12 }}>
-                Job Size:{' '}
-                <strong className="text-primary tabular-nums">
-                  {creationTab === 'csv'
-                    ? parsedEmails.length.toLocaleString()
-                    : creationTab === 'manual'
-                    ? manualText
-                        .split(/[\r\n,;]+/)
-                        .filter((l) => l.trim().includes('@')).length.toLocaleString()
-                    : 8}{' '}
-                  emails
-                </strong>
-              </span>
-              <span className="credit-calc-balance font-mono">
-                · Available:{' '}
-                <strong style={{ color: 'var(--accent-text)' }}>
-                  {subscription.creditsRemaining.toLocaleString()}
-                </strong>
-              </span>
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <Button variant="ghost" size="sm" onClick={() => setIsModalOpen(false)}>
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleStartVerification}
-                isLoading={isProcessing}
-                leftIcon={<Play size={13} />}
-              >
-                Run Verification
-              </Button>
-            </div>
-          </div>
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              isLoading={isProcessing}
+              onClick={handleStartVerification}
+              leftIcon={<Play size={12} />}
+            >
+              Start Verification
+            </Button>
+          </>
         }
       >
-        <div className="new-job-modal-content">
-          {/* Job Name */}
-          <div className="form-group">
-            <label className="form-label">
-              <span>List / Batch Identifier</span>
-              <span className="text-muted" style={{ fontSize: 11 }}>Optional custom name</span>
-            </label>
-            <input
-              type="text"
-              className="input font-mono"
-              placeholder="e.g. Q4_SaaS_Outreach_Leads.csv"
-              value={jobName}
-              onChange={(e) => setJobName(e.target.value)}
-            />
-          </div>
-
-          {/* Ingestion Source Tabs */}
-          <div className="tab-pill-nav" style={{ width: '100%', marginBottom: 14 }}>
+        <div className="new-job-modal-body">
+          {/* Method Selector Tabs */}
+          <div className="tab-pill-nav" style={{ marginBottom: 16 }}>
             <button
               className={`tab-pill-btn ${creationTab === 'csv' ? 'active' : ''}`}
-              style={{ flex: 1, textAlign: 'center' }}
               onClick={() => setCreationTab('csv')}
             >
-              CSV / TXT Upload
+              CSV File Upload
             </button>
             <button
               className={`tab-pill-btn ${creationTab === 'manual' ? 'active' : ''}`}
-              style={{ flex: 1, textAlign: 'center' }}
               onClick={() => setCreationTab('manual')}
             >
-              Manual Copy & Paste
+              Paste Email List
             </button>
             <button
               className={`tab-pill-btn ${creationTab === 'sheets' ? 'active' : ''}`}
-              style={{ flex: 1, textAlign: 'center' }}
               onClick={() => setCreationTab('sheets')}
             >
-              Google Sheets Link
+              Google Sheets
             </button>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Job Reference Label</label>
+            <input
+              type="text"
+              className="input"
+              placeholder="e.g. Q4_Outreach_US_Tech_Leads"
+              value={jobName}
+              onChange={(e) => setJobName(e.target.value)}
+            />
           </div>
 
           {/* Tab 1: CSV Upload */}
           {creationTab === 'csv' && (
             <div className="tab-content-csv">
               <input
-                type="file"
                 ref={fileInputRef}
-                style={{ display: 'none' }}
+                type="file"
                 accept=".csv,.txt"
+                style={{ display: 'none' }}
                 onChange={(e) => {
                   if (e.target.files && e.target.files[0]) {
                     handleCsvFile(e.target.files[0]);
                   }
                 }}
               />
+
               <div
-                className="dropzone-area"
+                className={`dropzone ${uploadedFileName ? 'has-file' : ''}`}
                 onClick={() => fileInputRef.current?.click()}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    handleCsvFile(e.dataTransfer.files[0]);
+                  }
+                }}
               >
-                <UploadCloud size={30} className="dropzone-icon" />
-                <div className="dropzone-title">
+                <UploadCloud size={24} className="dropzone-icon" />
+                <div className="dropzone-text">
                   {uploadedFileName ? (
-                    <span className="text-success font-mono">{uploadedFileName}</span>
+                    <div>
+                      <strong className="dropzone-file-name">{uploadedFileName}</strong>
+                      <p>{parsedEmails.length.toLocaleString()} valid contacts extracted</p>
+                    </div>
                   ) : (
-                    'Click to upload or drag & drop CSV file'
+                    <div>
+                      <strong>Click to upload or drag & drop CSV file</strong>
+                      <p>Supports .csv and .txt with UTF-8 encoding</p>
+                    </div>
                   )}
-                </div>
-                <div className="dropzone-desc font-mono">
-                  Auto-detects email column · Comma or semicolon delimited · Up to 250,000 records
                 </div>
               </div>
 
-              {parsedEmails.length > 0 && (
-                <div className="parsed-summary-box">
-                  <div className="parsed-summary-header">
-                    <CheckCircle2 size={15} className="text-success" />
-                    <span>
-                      Parsed <strong>{parsedEmails.length.toLocaleString()}</strong> valid email addresses
-                    </span>
+              {sampleRows.length > 0 && (
+                <div className="sample-preview">
+                  <div className="sample-title">Data Schema Preview:</div>
+                  <div className="sample-rows">
+                    {sampleRows.map((s, idx) => (
+                      <div key={idx} className="sample-item font-mono">
+                        <span className="sample-email">{s.email}</span>
+                        <span className="sample-domain font-sans">{s.domain}</span>
+                      </div>
+                    ))}
                   </div>
-
-                  {sampleRows.length > 0 && (
-                    <div className="parsed-samples-list">
-                      {sampleRows.map((sample, idx) => (
-                        <div key={idx} className="parsed-sample-row font-mono">
-                          <span className="text-primary">{sample.email}</span>
-                          <span className="text-muted">Domain: {sample.domain}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
               )}
             </div>
@@ -1085,18 +893,14 @@ export const BulkVerifyPage: React.FC = () => {
           {creationTab === 'manual' && (
             <div className="tab-content-manual">
               <div className="form-group">
-                <label className="form-label">
-                  <span>Paste Contact Records</span>
-                  <span className="text-muted" style={{ fontSize: 11 }}>
-                    One email per line, or comma / semicolon separated
-                  </span>
-                </label>
+                <label className="form-label">Paste Email Addresses</label>
                 <textarea
                   className="input font-mono"
                   rows={6}
-                  placeholder={`alex.vance@stripe.com\nelena.rostova@datadog.com\nsarah.connor@acme.corp\ntemp.user492@mailinator.com`}
+                  placeholder="alex.vance@stripe.com&#10;sarah.connor@acme.corp&#10;elena.rostova@datadog.com"
                   value={manualText}
                   onChange={(e) => setManualText(e.target.value)}
+                  style={{ resize: 'vertical', fontSize: 12 }}
                 />
               </div>
             </div>
@@ -1115,13 +919,13 @@ export const BulkVerifyPage: React.FC = () => {
                   onChange={(e) => setSheetsUrl(e.target.value)}
                 />
                 <span className="form-hint" style={{ marginTop: 4 }}>
-                  Ensure sheet link sharing is set to &ldquo;Anyone with the link can view&rdquo; or connect Google Sheets in Integrations.
+                  Ensure sheet link sharing is set to &ldquo;Anyone with the link can view&rdquo;.
                 </span>
               </div>
             </div>
           )}
 
-          {/* Clean Pre-processing Options */}
+          {/* Options */}
           <div className="new-job-options">
             <label className="checkbox-row">
               <input
@@ -1129,7 +933,7 @@ export const BulkVerifyPage: React.FC = () => {
                 checked={isDedupeEnabled}
                 onChange={(e) => setIsDedupeEnabled(e.target.checked)}
               />
-              <span>Deduplicate identical email addresses before processing</span>
+              <span>Deduplicate identical email addresses</span>
             </label>
             <label className="checkbox-row">
               <input
@@ -1137,295 +941,245 @@ export const BulkVerifyPage: React.FC = () => {
                 checked={isNormalizeEnabled}
                 onChange={(e) => setIsNormalizeEnabled(e.target.checked)}
               />
-              <span>Normalize domains and lowercase sanitize all addresses</span>
+              <span>Normalize domains and lowercase sanitize</span>
             </label>
           </div>
         </div>
       </Modal>
 
       <style>{`
-        /* Badge row in header */
-        .bulk-badge-row {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-bottom: 6px;
-        }
-
-        .badge-technical {
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.06em;
-          padding: 2px 7px;
-          background-color: var(--accent-subtle);
-          border: 1px solid var(--accent-border);
-          color: var(--accent-text);
-          border-radius: 4px;
-        }
-
-        .badge-meta {
-          font-size: 11px;
-          color: var(--text-muted);
-        }
-
-        /* Unified Deliverability Performance Card */
-        .distribution-console-card {
-          margin-bottom: var(--space-5);
-          border: 1px solid var(--border-standard);
+        /* Deliverability Metrics Overview Strip */
+        .overview-strip-container {
           background-color: var(--bg-panel);
+          border: 1px solid var(--border-standard);
+          border-radius: var(--radius-md);
+          margin-bottom: var(--space-4);
+          overflow: hidden;
         }
 
-        .distribution-top-row {
+        .overview-strip-header {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 12px 16px 10px;
+          padding: 10px 16px;
           border-bottom: 1px solid var(--border-subtle);
+          background-color: #0E0F12;
           flex-wrap: wrap;
-          gap: 8px;
-        }
-
-        .distribution-heading-group {
-          display: flex;
-          align-items: center;
           gap: 10px;
         }
 
-        .distribution-title {
-          font-size: 11px;
-          font-weight: 600;
-          color: var(--text-muted);
-          letter-spacing: 0.05em;
-        }
-
-        .distribution-job-name {
-          font-size: 12px;
-          color: var(--text-primary);
-          background-color: var(--bg-canvas);
-          padding: 2px 8px;
-          border-radius: 4px;
-          border: 1px solid var(--border-subtle);
-        }
-
-        .distribution-badge-group {
+        .overview-title-group {
           display: flex;
           align-items: center;
           gap: 8px;
         }
 
-        .badge-status-completed {
+        .overview-file-name {
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+
+        .overview-meta-tag {
+          font-size: 10.5px;
+          color: var(--text-muted);
+          background-color: var(--bg-input);
+          border: 1px solid var(--border-subtle);
+          border-radius: var(--radius-xs);
+          padding: 1px 5px;
+        }
+
+        .overview-status-pill {
           display: inline-flex;
           align-items: center;
-          gap: 5px;
+          gap: 4px;
           font-size: 10.5px;
           color: var(--status-success-text);
           background-color: var(--status-success-subtle);
           border: 1px solid var(--status-success-border);
           border-radius: var(--radius-full);
-          padding: 2px 8px;
-          font-weight: 600;
+          padding: 1px 7px;
+          font-weight: 500;
         }
 
-        .badge-source-tag {
-          font-size: 10.5px;
-          color: var(--text-muted);
-          background-color: var(--bg-input);
-          border: 1px solid var(--border-standard);
-          border-radius: 4px;
-          padding: 2px 6px;
-        }
-
-        /* Segmented Proportional Delivery Bar */
-        .segmented-distribution-bar {
-          display: flex;
-          height: 6px;
-          margin: 12px 16px 14px;
-          border-radius: 3px;
-          overflow: hidden;
-          background-color: #111214;
-        }
-
-        .seg-bar-fill {
-          height: 100%;
-          transition: width 0.3s ease;
-        }
-        .seg-bar-fill.deliverable {
-          background-color: var(--status-success);
-        }
-        .seg-bar-fill.risky {
-          background-color: var(--status-warning);
-        }
-        .seg-bar-fill.undeliverable {
-          background-color: var(--status-error);
-        }
-
-        /* 4 Symmetrical Metric Columns */
-        .distribution-metrics-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          padding: 0 16px 12px;
-          gap: 16px;
-        }
-
-        .distribution-col {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-          padding-right: 12px;
-          border-right: 1px solid var(--border-subtle);
-        }
-        .distribution-col:last-child {
-          border-right: none;
-          padding-right: 0;
-        }
-
-        .distribution-col-label {
+        .overview-actions-group {
           display: flex;
           align-items: center;
           gap: 6px;
-          font-size: 10.5px;
-          font-weight: 600;
-          color: var(--text-muted);
-          letter-spacing: 0.05em;
         }
 
-        .stat-dot {
-          width: 6px;
-          height: 6px;
+        /* 4-Metric Grid */
+        .overview-metrics-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          background-color: var(--bg-panel);
+        }
+
+        .overview-metric-col {
+          padding: 12px 18px;
+          border-right: 1px solid var(--border-subtle);
+        }
+        .overview-metric-col:last-child {
+          border-right: none;
+        }
+
+        .metric-label-row {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-bottom: 3px;
+        }
+
+        .metric-dot {
+          width: 5px;
+          height: 5px;
           border-radius: 50%;
-          flex-shrink: 0;
         }
-        .stat-dot.dot-neutral {
-          background-color: var(--text-muted);
-        }
-        .stat-dot.dot-success {
-          background-color: var(--status-success);
-        }
-        .stat-dot.dot-warning {
-          background-color: var(--status-warning);
-        }
-        .stat-dot.dot-error {
-          background-color: var(--status-error);
+        .dot-neutral { background-color: var(--text-muted); }
+        .dot-success { background-color: var(--status-success); }
+        .dot-warning { background-color: var(--status-warning); }
+        .dot-error { background-color: var(--status-error); }
+
+        .metric-label {
+          font-size: 10.5px;
+          font-weight: 500;
+          color: var(--text-muted);
+          letter-spacing: 0.04em;
         }
 
-        .distribution-col-value {
-          font-size: 22px;
-          font-weight: 700;
+        .metric-value {
+          font-size: 20px;
+          font-weight: 600;
           color: var(--text-primary);
-          letter-spacing: -0.02em;
+          line-height: 1.2;
         }
 
-        .distribution-col-meta {
+        .metric-subtext {
           font-size: 11.5px;
           color: var(--text-secondary);
+          margin-top: 2px;
         }
 
-        /* Two-Column Master-Detail Layout */
+        /* Thin deliverability track */
+        .overview-progress-track {
+          display: flex;
+          height: 3px;
+          background-color: rgba(255, 255, 255, 0.04);
+        }
+
+        .track-segment {
+          height: 100%;
+          transition: width 0.25s ease;
+        }
+        .track-deliverable { background-color: var(--status-success); }
+        .track-risky { background-color: var(--status-warning); }
+        .track-undeliverable { background-color: var(--status-error); }
+
+        /* Master-Detail Layout */
         .bulk-grid-layout {
           display: grid;
-          grid-template-columns: 260px minmax(0, 1fr);
+          grid-template-columns: 270px minmax(0, 1fr);
           gap: var(--space-4);
           align-items: start;
-          width: 100%;
-          min-width: 0;
         }
 
-        /* Left Column: Jobs Sidebar */
+        /* Left Column: Verification Jobs */
         .bulk-jobs-sidebar {
           background-color: var(--bg-panel);
           border: 1px solid var(--border-standard);
           border-radius: var(--radius-md);
           overflow: hidden;
-          width: 100%;
-          min-width: 0;
-        }
-
-        /* Right Column: Records Explorer */
-        .bulk-records-main {
-          min-width: 0;
-          width: 100%;
-          max-width: 100%;
-          overflow: hidden;
         }
 
         .jobs-sidebar-header {
-          padding: 10px 14px;
-          border-bottom: 1px solid var(--border-subtle);
           display: flex;
           align-items: center;
           justify-content: space-between;
-          background-color: #111215;
+          padding: 10px 14px;
+          border-bottom: 1px solid var(--border-subtle);
+          background-color: #0E0F12;
         }
 
         .jobs-header-title-row {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 6px;
         }
 
         .jobs-sidebar-title {
-          font-size: 12.5px;
+          font-size: 12px;
           font-weight: 600;
           color: var(--text-primary);
         }
 
         .jobs-sidebar-count {
           font-size: 10.5px;
-          background-color: var(--bg-canvas);
-          border: 1px solid var(--border-subtle);
-          padding: 1px 6px;
-          border-radius: 10px;
           color: var(--text-muted);
+          background-color: var(--bg-input);
+          border: 1px solid var(--border-subtle);
+          padding: 1px 5px;
+          border-radius: var(--radius-xs);
         }
 
-        .btn-icon-sm {
-          padding: 4px 6px !important;
-          min-height: auto !important;
+        .jobs-add-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 22px;
+          height: 22px;
+          border-radius: 4px;
+          background: transparent;
+          border: 1px solid var(--border-standard);
+          color: var(--text-secondary);
+          cursor: pointer;
+          transition: all 0.12s ease;
+        }
+        .jobs-add-btn:hover {
+          color: var(--text-primary);
+          border-color: var(--border-strong);
+          background-color: var(--bg-hover);
         }
 
         .jobs-list {
           display: flex;
           flex-direction: column;
-          max-height: 640px;
+          max-height: 600px;
           overflow-y: auto;
         }
 
         .job-card {
-          padding: 12px 14px;
+          padding: 10px 12px;
           border-bottom: 1px solid var(--border-subtle);
           cursor: pointer;
-          position: relative;
-          background-color: transparent;
           transition: background-color 0.12s ease;
+          background-color: transparent;
         }
+
+        .job-card:last-child {
+          border-bottom: none;
+        }
+
         .job-card:hover {
-          background-color: #15161A;
+          background-color: var(--bg-hover);
         }
+
         .job-card.selected {
-          background-color: #17181D;
-        }
-        .job-card.selected::before {
-          content: "";
-          position: absolute;
-          left: 0;
-          top: 0;
-          bottom: 0;
-          width: 3px;
-          background-color: var(--accent-primary);
+          background-color: var(--bg-panel-elevated);
         }
 
         .job-card-top {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-bottom: 6px;
+          margin-bottom: 4px;
         }
 
         .job-card-ident {
           display: flex;
           align-items: center;
           gap: 6px;
-          overflow: hidden;
+          min-width: 0;
+          flex: 1;
         }
 
         .job-file-icon {
@@ -1434,141 +1188,126 @@ export const BulkVerifyPage: React.FC = () => {
         }
 
         .job-card-name {
-          font-size: 12.5px;
-          font-weight: 600;
+          font-size: 12px;
+          font-weight: 500;
           color: var(--text-primary);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-          max-width: 170px;
         }
 
-        .job-badge-completed {
-          font-size: 9.5px;
-          color: var(--status-success-text);
-          background-color: var(--status-success-subtle);
-          border: 1px solid var(--status-success-border);
-          border-radius: var(--radius-full);
-          padding: 1px 6px;
+        .job-pill-done {
+          font-size: 10px;
+          color: var(--text-muted);
           flex-shrink: 0;
+          margin-left: 6px;
         }
 
-        .job-card-stats {
+        .job-card-meta {
           display: flex;
+          align-items: center;
           justify-content: space-between;
           font-size: 11px;
-          color: var(--text-muted);
+          color: var(--text-secondary);
           margin-bottom: 6px;
         }
 
-        .job-progress-split {
-          height: 3px;
-          border-radius: 2px;
-          display: flex;
-          overflow: hidden;
-          background-color: #1E2024;
-          margin-bottom: 6px;
+        .meta-deliverable {
+          color: var(--status-success-text);
         }
 
         .job-card-footer {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          font-size: 11px;
-          color: var(--text-muted);
+          font-size: 10.5px;
+          color: var(--text-tertiary);
         }
 
         .job-card-actions {
           display: flex;
-          align-items: center;
           gap: 4px;
         }
 
         .job-action-btn {
-          background: transparent;
-          border: none;
-          color: var(--text-muted);
-          cursor: pointer;
-          padding: 3px;
-          border-radius: 3px;
           display: flex;
           align-items: center;
-          transition: color 0.12s ease, background-color 0.12s ease;
+          justify-content: center;
+          width: 20px;
+          height: 20px;
+          border-radius: 3px;
+          background: transparent;
+          border: 1px solid transparent;
+          color: var(--text-muted);
+          cursor: pointer;
+          transition: all 0.12s ease;
         }
         .job-action-btn:hover {
           color: var(--text-primary);
-          background-color: var(--bg-hover);
+          background-color: var(--bg-input);
+          border-color: var(--border-standard);
         }
         .job-action-btn.delete-btn:hover {
           color: var(--status-error-text);
         }
 
-        /* Right Column: Records Explorer */
-        .records-header-info {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
+        /* Right Column: Detailed Records */
+        .bulk-records-container {
+          min-width: 0;
         }
 
-        .records-title-group {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          flex-wrap: wrap;
-        }
-
-        .records-job-name {
-          font-size: 14px;
-          font-weight: 600;
-          color: var(--text-primary);
-        }
-
-        .records-source-badge {
-          font-size: 10px;
-          padding: 1px 6px;
-          background-color: var(--bg-input);
+        .records-card {
+          background-color: var(--bg-panel);
           border: 1px solid var(--border-standard);
-          border-radius: 4px;
-          color: var(--text-muted);
+          border-radius: var(--radius-md);
+          overflow: hidden;
         }
 
-        .records-id-badge {
-          font-size: 10px;
-          color: var(--text-tertiary);
-        }
-
-        .records-time-meta {
-          font-size: 11px;
-          color: var(--text-muted);
-        }
-
-        .records-header-actions {
-          display: flex;
-          align-items: center;
-          gap: var(--space-2);
-        }
-
-        .table-filter-bar {
+        .records-toolbar {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 8px 14px;
+          padding: 8px 12px;
           border-bottom: 1px solid var(--border-subtle);
-          gap: var(--space-3);
+          background-color: #0E0F12;
+          gap: 12px;
           flex-wrap: wrap;
-          background-color: #121316;
         }
 
-        .table-search-input {
-          width: 250px;
+        .records-search-wrapper {
           position: relative;
+          display: flex;
+          align-items: center;
+          flex: 1;
+          min-width: 220px;
+          max-width: 360px;
+        }
+
+        .records-search-icon {
+          position: absolute;
+          left: 9px;
+          color: var(--text-muted);
+          pointer-events: none;
+        }
+
+        .records-search-input {
+          width: 100%;
+          background-color: var(--bg-input);
+          border: 1px solid var(--border-standard);
+          border-radius: var(--radius-sm);
+          color: var(--text-primary);
+          font-size: 12px;
+          padding: 5px 26px 5px 28px;
+          outline: none;
+          transition: border-color 0.12s ease;
+        }
+        .records-search-input:focus {
+          border-color: var(--border-focus);
         }
 
         .search-clear-btn {
           position: absolute;
-          right: 8px;
-          top: 50%;
-          transform: translateY(-50%);
+          right: 7px;
           background: transparent;
           border: none;
           color: var(--text-muted);
@@ -1576,214 +1315,177 @@ export const BulkVerifyPage: React.FC = () => {
           display: flex;
         }
 
-        .filter-pill-dot {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          display: inline-block;
-          margin-right: 5px;
-        }
-
-        /* Table Specifics */
-        .clickable-row {
-          cursor: pointer;
-          transition: background-color 0.12s ease;
-        }
-        .clickable-row:hover {
-          background-color: #15171C !important;
-        }
-
-        .email-cell-wrapper {
+        .records-filter-pills {
           display: flex;
-          align-items: center;
-          gap: 6px;
-          min-width: 0;
-        }
-
-        .email-text {
-          max-width: 170px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          display: inline-block;
-        }
-
-        .email-copy-btn {
-          background: transparent;
-          border: none;
-          color: var(--text-muted);
-          cursor: pointer;
-          opacity: 0;
-          transition: opacity 0.12s ease, color 0.12s ease;
-          padding: 2px;
-          display: flex;
-          flex-shrink: 0;
-        }
-        .clickable-row:hover .email-copy-btn {
-          opacity: 1;
-        }
-        .email-copy-btn:hover {
-          color: var(--text-primary);
-        }
-
-        .score-meter-cell {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
-
-        .mini-score-track {
-          width: 36px;
-          height: 4px;
-          background-color: #1E2024;
-          border-radius: 2px;
-          overflow: hidden;
-        }
-
-        .mini-score-fill {
-          height: 100%;
-        }
-
-        .mx-text {
-          max-width: 130px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          display: inline-block;
-        }
-
-        .flags-diag-cell {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          overflow: hidden;
-          white-space: nowrap;
-          text-overflow: ellipsis;
-        }
-
-        .badge-flag-error {
-          display: inline-flex;
           align-items: center;
           gap: 4px;
-          font-size: 10px;
-          color: var(--status-error-text);
-          background-color: var(--status-error-subtle);
-          border: 1px solid var(--status-error-border);
-          border-radius: 4px;
-          padding: 1px 5px;
-          flex-shrink: 0;
+          flex-wrap: wrap;
         }
 
-        .badge-flag-warning {
+        .filter-pill {
           display: inline-flex;
           align-items: center;
-          gap: 4px;
-          font-size: 10px;
-          color: var(--status-warning-text);
-          background-color: var(--status-warning-subtle);
-          border: 1px solid var(--status-warning-border);
-          border-radius: 4px;
-          padding: 1px 5px;
-          flex-shrink: 0;
-        }
-
-        .diagnostic-summary-cell {
+          gap: 5px;
+          padding: 4px 8px;
           font-size: 11.5px;
-          color: var(--text-secondary);
-          max-width: 140px;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        .row-inspect-btn {
+          font-weight: 500;
+          color: var(--text-muted);
           background: transparent;
           border: 1px solid transparent;
-          color: var(--text-muted);
+          border-radius: var(--radius-sm);
           cursor: pointer;
-          padding: 4px 6px;
-          border-radius: 4px;
-          display: inline-flex;
-          align-items: center;
           transition: all 0.12s ease;
         }
-        .row-inspect-btn:hover {
+
+        .filter-pill:hover {
           color: var(--text-primary);
           background-color: var(--bg-hover);
+        }
+
+        .filter-pill.active {
+          background-color: var(--bg-panel-elevated);
           border-color: var(--border-standard);
+          color: var(--text-primary);
         }
 
-        .pagination-page-indicator {
-          font-size: 12px;
-          color: var(--text-muted);
-          padding: 0 6px;
+        .filter-dot {
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
         }
 
-        /* Modal: Telemetry Body */
-        .telemetry-modal-body {
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
+        /* Record Row */
+        .record-row {
+          cursor: pointer;
         }
 
-        .telemetry-id-card {
+        .record-email-cell {
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          background-color: #101114;
-          border: 1px solid var(--border-standard);
-          padding: 12px 14px;
-          border-radius: var(--radius-sm);
+          gap: 4px;
         }
 
-        .telemetry-email {
-          font-size: 14px;
+        .email-local {
           font-weight: 600;
           color: var(--text-primary);
         }
 
-        .telemetry-mx {
-          font-size: 11px;
-          margin-top: 2px;
+        .email-domain {
+          color: var(--text-muted);
         }
 
-        .telemetry-score-banner {
-          display: flex;
-          gap: 14px;
-          background-color: #121316;
-          border: 1px solid var(--border-standard);
-          padding: 12px 14px;
-          border-radius: var(--radius-sm);
+        .email-copy-icon-btn {
+          opacity: 0;
+          background: transparent;
+          border: none;
+          color: var(--text-muted);
+          cursor: pointer;
+          padding: 2px 4px;
+          border-radius: 2px;
+          display: inline-flex;
           align-items: center;
+          transition: opacity 0.12s ease;
+        }
+        .record-row:hover .email-copy-icon-btn {
+          opacity: 1;
+        }
+        .email-copy-icon-btn:hover {
+          color: var(--text-primary);
+          background-color: var(--bg-input);
         }
 
-        .telemetry-score-box {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding-right: 14px;
-          border-right: 1px solid var(--border-subtle);
-        }
-
-        .telemetry-score-val {
-          font-size: 20px;
-          font-weight: 700;
+        .record-score-cell {
+          font-size: 12px;
           color: var(--text-primary);
         }
 
-        .telemetry-score-lbl {
-          font-size: 10px;
+        .score-max {
+          font-size: 10.5px;
+          color: var(--text-tertiary);
+        }
+
+        .record-mx-host {
+          font-size: 11.5px;
           color: var(--text-muted);
-          text-transform: uppercase;
+          max-width: 180px;
+          display: inline-block;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .inspect-row-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 3px 7px;
+          background: transparent;
+          border: 1px solid var(--border-subtle);
+          border-radius: var(--radius-xs);
+          color: var(--text-muted);
+          font-size: 11px;
+          cursor: pointer;
+          transition: all 0.12s ease;
+        }
+        .inspect-row-btn:hover {
+          color: var(--text-primary);
+          border-color: var(--border-standard);
+          background-color: var(--bg-hover);
+        }
+
+        .empty-table-cell {
+          text-align: center;
+          padding: 36px 14px;
+          color: var(--text-muted);
+        }
+
+        .pagination-info {
+          font-size: 11.5px;
+          color: var(--text-muted);
+        }
+
+        .pagination-controls {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .pagination-current {
+          font-size: 11.5px;
+          color: var(--text-secondary);
+        }
+
+        /* Telemetry Modal */
+        .telemetry-inspector {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+
+        .telemetry-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding-bottom: 12px;
+          border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .telemetry-email {
+          font-size: 15px;
+          font-weight: 600;
+          color: var(--text-primary);
         }
 
         .telemetry-reason-box {
-          flex: 1;
+          background-color: var(--bg-input);
+          border: 1px solid var(--border-standard);
+          border-radius: var(--radius-sm);
+          padding: 10px 12px;
+          font-size: 12.5px;
         }
 
-        .telemetry-reason-title {
-          font-size: 11px;
+        .reason-label {
+          font-size: 10.5px;
           font-weight: 600;
           color: var(--text-muted);
           text-transform: uppercase;
@@ -1791,138 +1493,164 @@ export const BulkVerifyPage: React.FC = () => {
           margin-bottom: 2px;
         }
 
-        .telemetry-reason-desc {
-          font-size: 13px;
+        .reason-val {
           color: var(--text-primary);
         }
 
-        .telemetry-checklist {
-          border: 1px solid var(--border-standard);
-          border-radius: var(--radius-sm);
-          overflow: hidden;
+        .telemetry-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
         }
 
-        .checklist-row {
+        .telemetry-stat-tile {
+          background-color: var(--bg-input);
+          border: 1px solid var(--border-subtle);
+          border-radius: var(--radius-sm);
+          padding: 8px 10px;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .tile-title {
+          font-size: 10.5px;
+          color: var(--text-muted);
+        }
+
+        .tile-val {
+          font-size: 12px;
+          font-weight: 500;
+          color: var(--text-primary);
+        }
+
+        .telemetry-actions {
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          padding: 10px 14px;
-          border-bottom: 1px solid var(--border-subtle);
-          font-size: 12.5px;
-          background-color: #101114;
-        }
-        .checklist-row:last-child {
-          border-bottom: none;
+          justify-content: flex-end;
+          gap: 8px;
+          margin-top: 8px;
         }
 
-        .checklist-label {
-          color: var(--text-secondary);
+        /* Modal Body */
+        .new-job-modal-body {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
         }
 
-        .checklist-status {
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          font-size: 11px;
-          font-weight: 600;
-        }
-
-        /* Ingestion Modal */
-        .dropzone-area {
+        .dropzone {
           border: 1px dashed var(--border-strong);
           border-radius: var(--radius-md);
-          padding: 28px 16px;
+          background-color: var(--bg-input);
+          padding: 24px;
           text-align: center;
-          background-color: #101114;
           cursor: pointer;
           transition: border-color 0.15s ease, background-color 0.15s ease;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
         }
-        .dropzone-area:hover {
+        .dropzone:hover {
           border-color: var(--accent-primary);
-          background-color: #131418;
+          background-color: var(--bg-hover);
+        }
+        .dropzone.has-file {
+          border-style: solid;
+          border-color: var(--accent-border);
+          background-color: var(--accent-subtle);
         }
 
         .dropzone-icon {
-          color: var(--accent-primary);
-          margin-bottom: 8px;
+          color: var(--text-muted);
         }
 
-        .dropzone-title {
-          font-size: 13.5px;
-          font-weight: 500;
+        .dropzone-text strong {
+          display: block;
           color: var(--text-primary);
+          font-size: 13px;
+        }
+        .dropzone-text p {
+          color: var(--text-muted);
+          font-size: 11.5px;
+          margin-top: 2px;
+        }
+
+        .sample-preview {
+          margin-top: 8px;
+          background-color: var(--bg-input);
+          border: 1px solid var(--border-subtle);
+          border-radius: var(--radius-sm);
+          padding: 8px 10px;
+        }
+
+        .sample-title {
+          font-size: 10.5px;
+          color: var(--text-muted);
           margin-bottom: 4px;
         }
 
-        .dropzone-desc {
-          font-size: 11px;
-          color: var(--text-muted);
-        }
-
-        .parsed-summary-box {
-          background-color: #101114;
-          border: 1px solid var(--border-standard);
-          border-radius: var(--radius-sm);
-          padding: 12px 14px;
-          margin-top: 12px;
-        }
-
-        .parsed-summary-header {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 12.5px;
-          color: var(--text-primary);
-          margin-bottom: 8px;
-        }
-
-        .parsed-samples-list {
+        .sample-rows {
           display: flex;
           flex-direction: column;
-          gap: 4px;
-          border-top: 1px solid var(--border-subtle);
-          padding-top: 8px;
+          gap: 2px;
         }
 
-        .parsed-sample-row {
+        .sample-item {
           display: flex;
           justify-content: space-between;
           font-size: 11px;
-        }
-
-        .checkbox-row {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 12px;
           color: var(--text-secondary);
-          cursor: pointer;
-          margin-top: 10px;
         }
 
-        .job-credit-calc {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-        }
-
-        .credit-calc-balance {
-          font-size: 11.5px;
+        .sample-domain {
           color: var(--text-muted);
         }
 
-        @media (max-width: 1080px) {
-          .distribution-metrics-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-          .distribution-col:nth-child(2) {
-            border-right: none;
-          }
+        .new-job-options {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          padding-top: 8px;
+          border-top: 1px solid var(--border-subtle);
+        }
+
+        .empty-state-card {
+          padding: 40px 20px;
+          text-align: center;
+        }
+
+        .empty-content {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          max-width: 360px;
+          margin: 0 auto;
+        }
+
+        .empty-icon {
+          color: var(--text-muted);
+          margin-bottom: 4px;
+        }
+
+        .text-success { color: var(--status-success-text); }
+        .text-warning { color: var(--status-warning-text); }
+        .text-error { color: var(--status-error-text); }
+
+        @media (max-width: 900px) {
           .bulk-grid-layout {
             grid-template-columns: 1fr;
           }
-          .bulk-jobs-sidebar {
-            max-height: 280px;
+          .overview-metrics-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+          .overview-metric-col:nth-child(2) {
+            border-right: none;
+          }
+          .overview-metric-col {
+            border-bottom: 1px solid var(--border-subtle);
           }
         }
       `}</style>

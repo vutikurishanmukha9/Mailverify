@@ -163,15 +163,6 @@ func main() {
 
   return (
     <div className="page-container">
-      {/* Hidden button for header trigger */}
-      <button
-        id="trigger-new-key-btn"
-        style={{ display: 'none' }}
-        onClick={() => {
-          setRevealedKeySecret(null);
-          setIsCreateModalOpen(true);
-        }}
-      />
 
       {/* Page Header */}
       <div className="page-header">
