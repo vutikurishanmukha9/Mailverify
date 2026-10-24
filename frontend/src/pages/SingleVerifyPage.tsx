@@ -20,7 +20,9 @@ import {
   Users,
   Filter,
   Building2,
-  FileCode
+  FileCode,
+  X,
+  Sparkles
 } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import { DeliverabilityBadge } from '../components/common/Badge';
@@ -182,15 +184,26 @@ export const SingleVerifyPage: React.FC = () => {
           className="verify-command-form"
         >
           <div className="verify-command-group">
-            <Mail className="verify-command-icon" size={16} />
+            <Mail className="verify-command-icon" size={17} />
             <input
               type="text"
-              className="verify-command-input font-mono"
+              className="verify-command-input"
               placeholder="Enter email to inspect (e.g. alex.developer@datadoghq.com)..."
               value={inputEmail}
               onChange={(e) => setInputEmail(e.target.value)}
               autoFocus
             />
+            {inputEmail && (
+              <button
+                type="button"
+                className="verify-clear-btn"
+                onClick={() => setInputEmail('')}
+                title="Clear input"
+                aria-label="Clear email input"
+              >
+                <X size={13} />
+              </button>
+            )}
             <kbd className="verify-kbd-hint">↵ Enter</kbd>
             <Button
               type="submit"
@@ -217,7 +230,10 @@ export const SingleVerifyPage: React.FC = () => {
 
         {/* Preset Quick Test Scenarios */}
         <div className="verify-presets-bar">
-          <span className="presets-caption">Quick Scenarios:</span>
+          <span className="presets-caption">
+            <Sparkles size={11} className="presets-caption-icon" />
+            Quick Scenarios:
+          </span>
           <div className="presets-tags">
             {SAMPLE_PRESETS.map((preset) => {
               const PresetIcon = preset.icon;
@@ -605,34 +621,46 @@ export const SingleVerifyPage: React.FC = () => {
       <style>{`
         /* Command Input Bar */
         .verify-bar-container {
-          background-color: var(--bg-panel);
-          border: 1px solid var(--border-standard);
-          border-radius: var(--radius-md);
-          padding: 14px 16px;
+          background: linear-gradient(180deg, rgba(18, 19, 24, 0.95) 0%, rgba(13, 14, 18, 0.98) 100%);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 12px;
+          padding: 16px;
           margin-bottom: var(--space-4);
-          box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 2px 8px rgba(0, 0, 0, 0.35);
+          box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
         .verify-command-group {
           position: relative;
           display: flex;
           align-items: center;
-          background-color: var(--bg-input);
-          border: 1px solid var(--border-standard);
-          border-radius: var(--radius-sm);
-          padding: 4px 6px 4px 12px;
-          transition: border-color 0.12s ease, box-shadow 0.12s ease;
-          gap: 8px;
+          background: rgba(8, 9, 12, 0.75);
+          border: 1px solid rgba(255, 255, 255, 0.09);
+          border-radius: 9px;
+          height: 50px;
+          padding: 0 6px 0 14px;
+          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+          gap: 10px;
+        }
+
+        .verify-command-group:hover {
+          border-color: rgba(255, 255, 255, 0.15);
+          background: rgba(8, 9, 12, 0.85);
         }
 
         .verify-command-group:focus-within {
-          border-color: var(--accent-primary);
-          box-shadow: 0 0 0 2px rgba(255, 100, 31, 0.18);
+          background: #08090D;
+          border-color: rgba(255, 255, 255, 0.22);
+          box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 8px 24px -4px rgba(0, 0, 0, 0.5);
         }
 
         .verify-command-icon {
-          color: var(--text-muted);
+          color: var(--text-tertiary);
           flex-shrink: 0;
+          transition: color 0.18s ease;
+        }
+        .verify-command-group:focus-within .verify-command-icon {
+          color: var(--accent-primary);
         }
 
         .verify-command-input {
@@ -640,32 +668,80 @@ export const SingleVerifyPage: React.FC = () => {
           background: transparent;
           border: none;
           color: var(--text-primary);
-          font-size: 13.5px;
+          font-size: 14px;
+          font-family: var(--font-sans);
+          font-weight: 450;
           outline: none;
           min-width: 0;
+          height: 100%;
+          padding: 0;
+          letter-spacing: -0.01em;
         }
         .verify-command-input::placeholder {
           font-family: var(--font-sans);
+          color: rgba(255, 255, 255, 0.32);
+          font-size: 13.5px;
+          font-weight: 400;
+        }
+
+        .verify-clear-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          border: none;
+          background: rgba(255, 255, 255, 0.06);
           color: var(--text-tertiary);
-          font-size: 12.5px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          flex-shrink: 0;
+          padding: 0;
+        }
+        .verify-clear-btn:hover {
+          background: rgba(255, 255, 255, 0.12);
+          color: #FFFFFF;
         }
 
         .verify-kbd-hint {
           display: inline-flex;
           align-items: center;
-          padding: 2px 6px;
+          gap: 3px;
+          padding: 4px 7px;
           font-family: var(--font-mono);
-          font-size: 10px;
-          color: var(--text-muted);
-          background-color: rgba(255, 255, 255, 0.04);
-          border: 1px solid var(--border-standard);
-          border-radius: 4px;
-          letter-spacing: -0.02em;
+          font-size: 10.5px;
+          font-weight: 500;
+          color: var(--text-tertiary);
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 5px;
+          letter-spacing: -0.01em;
           flex-shrink: 0;
+          line-height: 1;
         }
 
         .verify-command-btn {
           flex-shrink: 0;
+          height: 38px !important;
+          padding: 0 18px !important;
+          font-size: 13px !important;
+          font-weight: 600 !important;
+          letter-spacing: -0.01em;
+          border-radius: 7px !important;
+          background: linear-gradient(180deg, #FF641F 0%, #EA4C00 100%) !important;
+          border: 1px solid rgba(255, 255, 255, 0.18) !important;
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 2px 8px rgba(234, 76, 0, 0.35) !important;
+          transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+        .verify-command-btn:hover:not(:disabled) {
+          background: linear-gradient(180deg, #FF7533 0%, #F55500 100%) !important;
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 4px 14px rgba(234, 76, 0, 0.45) !important;
+          transform: translateY(-0.5px);
+        }
+        .verify-command-btn:active:not(:disabled) {
+          transform: translateY(0.5px);
+          box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3) !important;
         }
 
         /* Live Multi-Stage Engine Feedback Bar */
@@ -673,7 +749,7 @@ export const SingleVerifyPage: React.FC = () => {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-top: 10px;
+          margin-top: 12px;
           padding: 8px 12px;
           background-color: rgba(255, 100, 31, 0.06);
           border: 1px solid rgba(255, 100, 31, 0.22);
@@ -716,44 +792,62 @@ export const SingleVerifyPage: React.FC = () => {
         .verify-presets-bar {
           display: flex;
           align-items: center;
-          gap: 8px;
-          margin-top: 10px;
+          gap: 10px;
+          margin-top: 14px;
+          padding-top: 12px;
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
           flex-wrap: wrap;
         }
 
         .presets-caption {
-          font-size: 11px;
-          color: var(--text-muted);
-          font-weight: 500;
+          font-size: 10.5px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          color: var(--text-tertiary);
+          display: flex;
+          align-items: center;
+          gap: 5px;
+        }
+
+        .presets-caption-icon {
+          color: var(--accent-primary);
         }
 
         .presets-tags {
           display: flex;
-          gap: 4px;
+          gap: 6px;
           flex-wrap: wrap;
         }
 
         .preset-chip {
           display: inline-flex;
           align-items: center;
-          gap: 5px;
-          background-color: var(--bg-panel-elevated);
-          border: 1px solid var(--border-subtle);
+          gap: 6px;
+          background: rgba(255, 255, 255, 0.025);
+          border: 1px solid rgba(255, 255, 255, 0.07);
           color: var(--text-secondary);
-          font-size: 11px;
-          padding: 3px 8px;
-          border-radius: var(--radius-xs);
+          font-size: 11.5px;
+          font-weight: 450;
+          padding: 4px 10px;
+          border-radius: 6px;
           cursor: pointer;
-          transition: all 0.12s ease;
+          transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .preset-chip:hover {
-          color: var(--text-primary);
-          border-color: var(--border-strong);
-          background-color: var(--bg-hover);
+          color: #FFFFFF;
+          border-color: rgba(255, 255, 255, 0.16);
+          background: rgba(255, 255, 255, 0.07);
+          transform: translateY(-1px);
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+        }
+        .preset-chip:active {
+          transform: translateY(0);
         }
 
         .preset-chip-icon {
-          color: var(--text-muted);
+          color: var(--text-tertiary);
+          transition: color 0.15s ease;
         }
         .preset-chip:hover .preset-chip-icon {
           color: var(--accent-primary);
@@ -1147,19 +1241,24 @@ export const SingleVerifyPage: React.FC = () => {
             padding: 12px;
           }
           .verify-command-group {
+            height: auto;
+            min-height: 48px;
             flex-direction: column;
             align-items: stretch;
-            padding: 8px;
-            gap: 8px;
+            padding: 10px;
+            gap: 10px;
           }
           .verify-command-group .verify-command-input {
-            padding: 6px 4px;
-            font-size: 13.5px;
+            padding: 4px 0;
+            font-size: 14px;
           }
           .verify-command-btn {
             width: 100%;
             justify-content: center;
             height: 38px;
+          }
+          .verify-kbd-hint {
+            display: none;
           }
           .presets-tags {
             overflow-x: auto;
