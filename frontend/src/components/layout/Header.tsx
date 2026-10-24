@@ -1,6 +1,6 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
-import { Menu, Coins, Plus, HelpCircle, Layers } from 'lucide-react';
+import { Menu, Coins, Plus, HelpCircle, Layers, Search } from 'lucide-react';
 import { Button } from '../common/Button';
 
 export const Header: React.FC = () => {
@@ -55,6 +55,17 @@ export const Header: React.FC = () => {
         </div>
       </div>
 
+      {/* Middle Command Palette Search Trigger */}
+      <div
+        className="header-search-hint desktop-only"
+        onClick={() => navigateTo('single')}
+        title="Quick Verify or Jump (⌘K)"
+      >
+        <Search size={13} className="search-hint-icon" />
+        <span className="search-hint-text">Verify email or jump to...</span>
+        <kbd className="search-hint-kbd">⌘K</kbd>
+      </div>
+
       <div className="header-right">
         {/* Credits Counter Pill */}
         <div
@@ -99,7 +110,9 @@ export const Header: React.FC = () => {
       <style>{`
         .top-header {
           height: var(--header-height);
-          background-color: var(--bg-canvas);
+          background-color: rgba(8, 9, 10, 0.85);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
           border-bottom: 1px solid var(--border-subtle);
           display: flex;
           align-items: center;
@@ -114,6 +127,45 @@ export const Header: React.FC = () => {
           display: flex;
           align-items: center;
           gap: var(--space-3);
+        }
+
+        .header-search-hint {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background-color: rgba(255, 255, 255, 0.03);
+          border: 1px solid var(--border-standard);
+          border-radius: var(--radius-sm);
+          padding: 4px 10px;
+          cursor: pointer;
+          transition: all 0.12s ease;
+          width: 260px;
+          color: var(--text-muted);
+        }
+        .header-search-hint:hover {
+          background-color: rgba(255, 255, 255, 0.06);
+          border-color: var(--border-strong);
+          color: var(--text-secondary);
+        }
+        .search-hint-icon {
+          color: var(--text-muted);
+          flex-shrink: 0;
+        }
+        .search-hint-text {
+          font-size: 12px;
+          flex: 1;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .search-hint-kbd {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          padding: 1.5px 4.5px;
+          border-radius: 3px;
+          background-color: rgba(255, 255, 255, 0.06);
+          border: 1px solid var(--border-subtle);
+          color: var(--text-tertiary);
         }
 
         .mobile-menu-btn {

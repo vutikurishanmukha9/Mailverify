@@ -399,10 +399,11 @@ export const Sidebar: React.FC = () => {
         }
 
         .health-dot {
-          width: 5px;
-          height: 5px;
+          width: 6px;
+          height: 6px;
           border-radius: 50%;
           background-color: var(--status-success);
+          box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
         }
 
         .health-text {
@@ -448,9 +449,10 @@ export const Sidebar: React.FC = () => {
           width: 28px;
           height: 28px;
           border-radius: 6px;
-          background-color: rgba(255, 255, 255, 0.08);
-          border: 1px solid var(--border-standard);
-          color: var(--text-secondary);
+          background: linear-gradient(135deg, rgba(255, 100, 31, 0.18), rgba(255, 100, 31, 0.04));
+          border: 1px solid rgba(255, 100, 31, 0.28);
+          color: var(--accent-text);
+          font-family: var(--font-mono);
           font-size: 11px;
           font-weight: 600;
           display: flex;

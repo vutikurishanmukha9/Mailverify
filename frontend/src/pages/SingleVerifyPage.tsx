@@ -13,19 +13,26 @@ import {
   Server,
   Zap,
   Clock,
-  Code
+  Code,
+  ShieldCheck,
+  ShieldAlert,
+  Globe,
+  Users,
+  Filter,
+  Building2,
+  FileCode
 } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import { DeliverabilityBadge } from '../components/common/Badge';
 import { Card, CardBody } from '../components/common/Card';
 
 const SAMPLE_PRESETS = [
-  { label: 'Corporate Lead', email: 'elena.rostova@datadog.com' },
-  { label: 'Gmail Account', email: 'alex.developer@gmail.com' },
-  { label: 'Disposable Email', email: 'temp.user492@mailinator.com' },
-  { label: 'Spam Trap Seed', email: 'trap.tester@honeypot-sec.org' },
-  { label: 'Role Account', email: 'billing@enterprise.corp' },
-  { label: 'Catch-all Domain', email: 'user@catchall-company.io' }
+  { label: 'Corporate Lead', email: 'elena.rostova@datadog.com', icon: Building2 },
+  { label: 'Gmail Account', email: 'alex.developer@gmail.com', icon: Mail },
+  { label: 'Disposable Email', email: 'temp.user492@mailinator.com', icon: Trash2 },
+  { label: 'Spam Trap Seed', email: 'trap.tester@honeypot-sec.org', icon: ShieldAlert },
+  { label: 'Role Account', email: 'billing@enterprise.corp', icon: Users },
+  { label: 'Catch-all Domain', email: 'user@catchall-company.io', icon: Globe }
 ];
 
 export const SingleVerifyPage: React.FC = () => {
@@ -40,6 +47,7 @@ export const SingleVerifyPage: React.FC = () => {
 
   const [inputEmail, setInputEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [inspectionStage, setInspectionStage] = useState<string>('');
   const [currentResult, setCurrentResult] = useState<SingleVerificationResult | null>(
     singleHistory.length > 0 ? singleHistory[0] : null
   );
@@ -71,14 +79,24 @@ export const SingleVerifyPage: React.FC = () => {
     }
 
     setIsLoading(true);
-    // Simulate real network SMTP handshake & DNS MX roundtrip
+    setInspectionStage('Querying root DNS & resolving MX records...');
+
+    setTimeout(() => {
+      setInspectionStage('Initiating TLS handshake & SMTP RCPT TO simulation...');
+    }, 220);
+
+    setTimeout(() => {
+      setInspectionStage('Evaluating disposable hashes & spam trap heuristics...');
+    }, 450);
+
     setTimeout(() => {
       const result = verifyEmailAddress(target);
       setCurrentResult(result);
       addSingleVerification(result);
       setIsLoading(false);
+      setInspectionStage('');
       setInputEmail(target);
-    }, 380);
+    }, 700);
   };
 
   const handleCopyJson = () => {
@@ -154,7 +172,7 @@ export const SingleVerifyPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Sleek Command-style Search Bar (NO card-in-card) */}
+      {/* Sleek Command-style Search Bar */}
       <div className="verify-bar-container">
         <form
           onSubmit={(e) => {
@@ -173,6 +191,7 @@ export const SingleVerifyPage: React.FC = () => {
               onChange={(e) => setInputEmail(e.target.value)}
               autoFocus
             />
+            <kbd className="verify-kbd-hint">↵ Enter</kbd>
             <Button
               type="submit"
               variant="primary"
@@ -186,23 +205,38 @@ export const SingleVerifyPage: React.FC = () => {
           </div>
         </form>
 
+        {/* Live Multi-Stage Engine Feedback */}
+        {isLoading && (
+          <div className="inspection-live-bar">
+            <div className="inspection-live-left">
+              <span className="live-pulse-dot" />
+              <span className="inspection-live-stage font-mono">{inspectionStage}</span>
+            </div>
+            <span className="inspection-live-tag font-mono">RFC-5322 Engine Active</span>
+          </div>
+        )}
+
         {/* Preset Quick Test Scenarios */}
         <div className="verify-presets-bar">
           <span className="presets-caption">Quick Scenarios:</span>
           <div className="presets-tags">
-            {SAMPLE_PRESETS.map((preset) => (
-              <button
-                key={preset.label}
-                type="button"
-                className="preset-chip"
-                onClick={() => {
-                  setInputEmail(preset.email);
-                  handleVerify(preset.email);
-                }}
-              >
-                {preset.label}
-              </button>
-            ))}
+            {SAMPLE_PRESETS.map((preset) => {
+              const PresetIcon = preset.icon;
+              return (
+                <button
+                  key={preset.label}
+                  type="button"
+                  className="preset-chip"
+                  onClick={() => {
+                    setInputEmail(preset.email);
+                    handleVerify(preset.email);
+                  }}
+                >
+                  <PresetIcon size={11} className="preset-chip-icon" />
+                  <span>{preset.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -241,12 +275,29 @@ export const SingleVerifyPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Verdict Summary Strip */}
+            {/* Verdict Summary Strip with Deliverability Score Gauge */}
             <div className="verdict-summary-strip">
               <div className="verdict-summary-left">
                 <span className={`verdict-pip pip-${currentResult.status}`} />
                 <span className="verdict-text">{currentResult.reason}</span>
               </div>
+              
+              {/* Deliverability Meter Gauge */}
+              <div className="deliverability-score-gauge">
+                <div className="gauge-label-row font-mono tabular-nums">
+                  <span className="gauge-label">Deliverability Score:</span>
+                  <span className={`gauge-value ${currentResult.score >= 80 ? 'text-success' : currentResult.score >= 50 ? 'text-warning' : 'text-error'}`}>
+                    {currentResult.score}/100
+                  </span>
+                </div>
+                <div className="gauge-track">
+                  <div
+                    className={`gauge-fill ${currentResult.score >= 80 ? 'fill-success' : currentResult.score >= 50 ? 'fill-warning' : 'fill-error'}`}
+                    style={{ width: `${currentResult.score}%` }}
+                  />
+                </div>
+              </div>
+
               <div className="verdict-meta-group font-mono tabular-nums">
                 <span className="verdict-meta-item">
                   <Clock size={11} /> {currentResult.latencyMs}ms
@@ -263,8 +314,12 @@ export const SingleVerifyPage: React.FC = () => {
                 {/* 1. Syntax */}
                 <div className="matrix-cell">
                   <div className="matrix-top">
-                    <span className="matrix-title">RFC 5322 Syntax</span>
+                    <div className="matrix-title-wrap">
+                      <FileCode size={13} className="matrix-icon text-muted" />
+                      <span className="matrix-title">RFC 5322 Syntax</span>
+                    </div>
                     <span className={`matrix-status ${currentResult.syntaxValid ? 'status-pass' : 'status-fail'}`}>
+                      <span className={`matrix-dot ${currentResult.syntaxValid ? 'dot-pass' : 'dot-fail'}`} />
                       {currentResult.syntaxValid ? 'Valid' : 'Syntax Error'}
                     </span>
                   </div>
@@ -274,8 +329,12 @@ export const SingleVerifyPage: React.FC = () => {
                 {/* 2. DNS MX */}
                 <div className="matrix-cell">
                   <div className="matrix-top">
-                    <span className="matrix-title">DNS MX Resolution</span>
+                    <div className="matrix-title-wrap">
+                      <Server size={13} className="matrix-icon text-muted" />
+                      <span className="matrix-title">DNS MX Resolution</span>
+                    </div>
                     <span className={`matrix-status ${currentResult.mxRecordsFound ? 'status-pass' : 'status-fail'}`}>
+                      <span className={`matrix-dot ${currentResult.mxRecordsFound ? 'dot-pass' : 'dot-fail'}`} />
                       {currentResult.mxRecordsFound ? 'Resolved' : 'No MX Records'}
                     </span>
                   </div>
@@ -287,8 +346,12 @@ export const SingleVerifyPage: React.FC = () => {
                 {/* 3. SMTP Mailbox */}
                 <div className="matrix-cell">
                   <div className="matrix-top">
-                    <span className="matrix-title">SMTP Mailbox Check</span>
+                    <div className="matrix-title-wrap">
+                      <Zap size={13} className="matrix-icon text-muted" />
+                      <span className="matrix-title">SMTP Mailbox Check</span>
+                    </div>
                     <span className={`matrix-status ${currentResult.smtpCheck ? 'status-pass' : 'status-fail'}`}>
+                      <span className={`matrix-dot ${currentResult.smtpCheck ? 'dot-pass' : 'dot-fail'}`} />
                       {currentResult.smtpCheck ? 'Accepted (250)' : 'Rejected (550)'}
                     </span>
                   </div>
@@ -300,8 +363,12 @@ export const SingleVerifyPage: React.FC = () => {
                 {/* 4. Disposable */}
                 <div className="matrix-cell">
                   <div className="matrix-top">
-                    <span className="matrix-title">Disposable Email</span>
+                    <div className="matrix-title-wrap">
+                      <Trash2 size={13} className="matrix-icon text-muted" />
+                      <span className="matrix-title">Disposable Email</span>
+                    </div>
                     <span className={`matrix-status ${!currentResult.isDisposable ? 'status-pass' : 'status-fail'}`}>
+                      <span className={`matrix-dot ${!currentResult.isDisposable ? 'dot-pass' : 'dot-fail'}`} />
                       {!currentResult.isDisposable ? 'Clean' : 'Disposable Burner'}
                     </span>
                   </div>
@@ -313,8 +380,12 @@ export const SingleVerifyPage: React.FC = () => {
                 {/* 5. Provider Type */}
                 <div className="matrix-cell">
                   <div className="matrix-top">
-                    <span className="matrix-title">Provider Type</span>
+                    <div className="matrix-title-wrap">
+                      <Globe size={13} className="matrix-icon text-muted" />
+                      <span className="matrix-title">Provider Type</span>
+                    </div>
                     <span className="matrix-status status-neutral">
+                      <span className="matrix-dot dot-neutral" />
                       {currentResult.isFreeMail ? 'Free Webmail' : 'Custom Corporate'}
                     </span>
                   </div>
@@ -326,8 +397,12 @@ export const SingleVerifyPage: React.FC = () => {
                 {/* 6. Role Account */}
                 <div className="matrix-cell">
                   <div className="matrix-top">
-                    <span className="matrix-title">Role-based Mailbox</span>
+                    <div className="matrix-title-wrap">
+                      <Users size={13} className="matrix-icon text-muted" />
+                      <span className="matrix-title">Role-based Mailbox</span>
+                    </div>
                     <span className={`matrix-status ${!currentResult.isRoleBased ? 'status-pass' : 'status-warn'}`}>
+                      <span className={`matrix-dot ${!currentResult.isRoleBased ? 'dot-pass' : 'dot-warn'}`} />
                       {!currentResult.isRoleBased ? 'Individual' : 'Team / Role'}
                     </span>
                   </div>
@@ -339,8 +414,12 @@ export const SingleVerifyPage: React.FC = () => {
                 {/* 7. Catch-all Domain */}
                 <div className="matrix-cell">
                   <div className="matrix-top">
-                    <span className="matrix-title">Catch-all Configuration</span>
+                    <div className="matrix-title-wrap">
+                      <Filter size={13} className="matrix-icon text-muted" />
+                      <span className="matrix-title">Catch-all Config</span>
+                    </div>
                     <span className={`matrix-status ${!currentResult.isCatchAll ? 'status-pass' : 'status-warn'}`}>
+                      <span className={`matrix-dot ${!currentResult.isCatchAll ? 'dot-pass' : 'dot-warn'}`} />
                       {!currentResult.isCatchAll ? 'Explicit Routing' : 'Catch-all Active'}
                     </span>
                   </div>
@@ -352,8 +431,12 @@ export const SingleVerifyPage: React.FC = () => {
                 {/* 8. Spam Trap */}
                 <div className="matrix-cell">
                   <div className="matrix-top">
-                    <span className="matrix-title">Spam Trap Assessment</span>
+                    <div className="matrix-title-wrap">
+                      <ShieldCheck size={13} className="matrix-icon text-muted" />
+                      <span className="matrix-title">Spam Trap Assessment</span>
+                    </div>
                     <span className={`matrix-status ${currentResult.spamTrapScore < 20 ? 'status-pass' : 'status-fail'}`}>
+                      <span className={`matrix-dot ${currentResult.spamTrapScore < 20 ? 'dot-pass' : 'dot-fail'}`} />
                       {currentResult.spamTrapScore < 20 ? '0% Risk' : `${currentResult.spamTrapScore}% Trap Risk`}
                     </span>
                   </div>
@@ -375,7 +458,7 @@ export const SingleVerifyPage: React.FC = () => {
                     <span>Raw Telemetry Payload</span>
                   </div>
                   <span className="json-expand-label font-mono">
-                    {isRawJsonExpanded ? 'Hide' : 'Inspect JSON'}
+                    {isRawJsonExpanded ? 'Hide Payload' : 'Inspect JSON Payload'}
                   </span>
                 </button>
                 {isRawJsonExpanded && (
@@ -528,6 +611,7 @@ export const SingleVerifyPage: React.FC = () => {
           border-radius: var(--radius-md);
           padding: 14px 16px;
           margin-bottom: var(--space-4);
+          box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 2px 8px rgba(0, 0, 0, 0.35);
         }
 
         .verify-command-group {
@@ -537,13 +621,14 @@ export const SingleVerifyPage: React.FC = () => {
           background-color: var(--bg-input);
           border: 1px solid var(--border-standard);
           border-radius: var(--radius-sm);
-          padding: 4px 4px 4px 12px;
-          transition: border-color 0.12s ease;
+          padding: 4px 6px 4px 12px;
+          transition: border-color 0.12s ease, box-shadow 0.12s ease;
           gap: 8px;
         }
 
         .verify-command-group:focus-within {
           border-color: var(--accent-primary);
+          box-shadow: 0 0 0 2px rgba(255, 100, 31, 0.18);
         }
 
         .verify-command-icon {
@@ -556,7 +641,7 @@ export const SingleVerifyPage: React.FC = () => {
           background: transparent;
           border: none;
           color: var(--text-primary);
-          font-size: 13px;
+          font-size: 13.5px;
           outline: none;
           min-width: 0;
         }
@@ -566,8 +651,67 @@ export const SingleVerifyPage: React.FC = () => {
           font-size: 12.5px;
         }
 
+        .verify-kbd-hint {
+          display: inline-flex;
+          align-items: center;
+          padding: 2px 6px;
+          font-family: var(--font-mono);
+          font-size: 10px;
+          color: var(--text-muted);
+          background-color: rgba(255, 255, 255, 0.04);
+          border: 1px solid var(--border-standard);
+          border-radius: 4px;
+          letter-spacing: -0.02em;
+          flex-shrink: 0;
+        }
+
         .verify-command-btn {
           flex-shrink: 0;
+        }
+
+        /* Live Multi-Stage Engine Feedback Bar */
+        .inspection-live-bar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-top: 10px;
+          padding: 8px 12px;
+          background-color: rgba(255, 100, 31, 0.06);
+          border: 1px solid rgba(255, 100, 31, 0.22);
+          border-radius: var(--radius-sm);
+          animation: fadeIn 0.15s ease-out;
+        }
+
+        .inspection-live-left {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .live-pulse-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background-color: var(--accent-primary);
+          box-shadow: 0 0 8px var(--accent-primary);
+          animation: pulseDot 1.2s infinite ease-in-out;
+          flex-shrink: 0;
+        }
+
+        @keyframes pulseDot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .inspection-live-stage {
+          font-size: 11.5px;
+          color: var(--accent-text);
+          font-weight: 500;
+        }
+
+        .inspection-live-tag {
+          font-size: 10.5px;
+          color: var(--text-muted);
         }
 
         .verify-presets-bar {
@@ -591,19 +735,29 @@ export const SingleVerifyPage: React.FC = () => {
         }
 
         .preset-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
           background-color: var(--bg-panel-elevated);
           border: 1px solid var(--border-subtle);
           color: var(--text-secondary);
           font-size: 11px;
-          padding: 2px 7px;
+          padding: 3px 8px;
           border-radius: var(--radius-xs);
           cursor: pointer;
-          transition: all 0.1s ease;
+          transition: all 0.12s ease;
         }
         .preset-chip:hover {
           color: var(--text-primary);
           border-color: var(--border-strong);
           background-color: var(--bg-hover);
+        }
+
+        .preset-chip-icon {
+          color: var(--text-muted);
+        }
+        .preset-chip:hover .preset-chip-icon {
+          color: var(--accent-primary);
         }
 
         /* Result Console */
@@ -617,6 +771,7 @@ export const SingleVerifyPage: React.FC = () => {
           border: 1px solid var(--border-standard);
           border-radius: var(--radius-md);
           overflow: hidden;
+          box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 4px 16px rgba(0, 0, 0, 0.4);
         }
 
         .result-header {
@@ -637,9 +792,10 @@ export const SingleVerifyPage: React.FC = () => {
         }
 
         .result-email-address {
-          font-size: 14.5px;
+          font-size: 15px;
           font-weight: 600;
           color: var(--text-primary);
+          letter-spacing: -0.015em;
         }
 
         .result-actions {
@@ -654,15 +810,17 @@ export const SingleVerifyPage: React.FC = () => {
           justify-content: space-between;
           padding: 10px 16px;
           border-bottom: 1px solid var(--border-subtle);
-          background-color: rgba(255, 255, 255, 0.02);
+          background-color: rgba(255, 255, 255, 0.015);
           flex-wrap: wrap;
-          gap: 8px;
+          gap: 12px;
         }
 
         .verdict-summary-left {
           display: flex;
           align-items: center;
           gap: 8px;
+          flex: 1;
+          min-width: 240px;
         }
 
         .verdict-pip {
@@ -680,6 +838,46 @@ export const SingleVerifyPage: React.FC = () => {
           color: var(--text-primary);
           font-weight: 500;
         }
+
+        /* Deliverability Gauge Meter */
+        .deliverability-score-gauge {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          min-width: 170px;
+        }
+
+        .gauge-label-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          font-size: 10.5px;
+        }
+
+        .gauge-label {
+          color: var(--text-muted);
+        }
+
+        .gauge-value {
+          font-weight: 600;
+        }
+
+        .gauge-track {
+          width: 100%;
+          height: 4px;
+          background-color: rgba(255, 255, 255, 0.08);
+          border-radius: var(--radius-full);
+          overflow: hidden;
+        }
+
+        .gauge-fill {
+          height: 100%;
+          border-radius: var(--radius-full);
+          transition: width 0.3s ease;
+        }
+        .fill-success { background-color: var(--status-success); }
+        .fill-warning { background-color: var(--status-warning); }
+        .fill-error { background-color: var(--status-error); }
 
         .verdict-meta-group {
           display: flex;
@@ -711,24 +909,58 @@ export const SingleVerifyPage: React.FC = () => {
           display: flex;
           flex-direction: column;
           gap: 4px;
+          transition: border-color 0.12s ease;
+        }
+        .matrix-cell:hover {
+          border-color: var(--border-standard);
         }
 
         .matrix-top {
           display: flex;
           align-items: center;
           justify-content: space-between;
+          gap: 6px;
+        }
+
+        .matrix-title-wrap {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          min-width: 0;
+        }
+
+        .matrix-icon {
+          flex-shrink: 0;
         }
 
         .matrix-title {
           font-size: 11px;
           font-weight: 500;
           color: var(--text-muted);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         .matrix-status {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
           font-size: 10.5px;
           font-weight: 600;
+          flex-shrink: 0;
         }
+        .matrix-dot {
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          display: inline-block;
+        }
+        .dot-pass { background-color: var(--status-success); }
+        .dot-fail { background-color: var(--status-error); }
+        .dot-warn { background-color: var(--status-warning); }
+        .dot-neutral { background-color: var(--text-muted); }
+
         .status-pass { color: var(--status-success-text); }
         .status-fail { color: var(--status-error-text); }
         .status-warn { color: var(--status-warning-text); }
@@ -740,6 +972,7 @@ export const SingleVerifyPage: React.FC = () => {
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+          margin-top: 2px;
         }
 
         /* Developer JSON Drawer */

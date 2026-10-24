@@ -955,6 +955,7 @@ export const BulkVerifyPage: React.FC = () => {
           border-radius: var(--radius-md);
           margin-bottom: var(--space-4);
           overflow: hidden;
+          box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 2px 8px rgba(0, 0, 0, 0.35);
         }
 
         .overview-strip-header {
@@ -975,18 +976,21 @@ export const BulkVerifyPage: React.FC = () => {
         }
 
         .overview-file-name {
-          font-size: 13px;
+          font-size: 13.5px;
           font-weight: 600;
           color: var(--text-primary);
+          letter-spacing: -0.01em;
         }
 
         .overview-meta-tag {
-          font-size: 10.5px;
+          font-size: 10px;
+          font-weight: 600;
           color: var(--text-muted);
           background-color: var(--bg-input);
           border: 1px solid var(--border-subtle);
           border-radius: var(--radius-xs);
-          padding: 1px 5px;
+          padding: 1px 6px;
+          letter-spacing: 0.02em;
         }
 
         .overview-status-pill {
