@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import type { Integration } from '../types';
 import {
-  Zap,
   CheckCircle2,
   Clock,
   Settings2,
@@ -221,7 +220,6 @@ export const IntegrationsPage: React.FC = () => {
                       variant="primary"
                       size="sm"
                       onClick={() => openConfigModal(int)}
-                      leftIcon={<Zap size={13} />}
                     >
                       Connect {int.name}
                     </Button>
