@@ -11,7 +11,7 @@ import {
   Download,
   Trash2,
   Server,
-  Zap,
+  Send,
   Clock,
   Code,
   ShieldCheck,
@@ -21,8 +21,7 @@ import {
   Filter,
   Building2,
   FileCode,
-  X,
-  Sparkles
+  X
 } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import { DeliverabilityBadge } from '../components/common/Badge';
@@ -230,10 +229,7 @@ export const SingleVerifyPage: React.FC = () => {
 
         {/* Preset Quick Test Scenarios */}
         <div className="verify-presets-bar">
-          <span className="presets-caption">
-            <Sparkles size={11} className="presets-caption-icon" />
-            Quick Scenarios:
-          </span>
+          <span className="presets-caption">Quick Scenarios:</span>
           <div className="presets-tags">
             {SAMPLE_PRESETS.map((preset) => {
               const PresetIcon = preset.icon;
@@ -362,7 +358,7 @@ export const SingleVerifyPage: React.FC = () => {
                 <div className="matrix-cell">
                   <div className="matrix-top">
                     <div className="matrix-title-wrap">
-                      <Zap size={13} className="matrix-icon text-muted" />
+                      <Send size={13} className="matrix-icon text-muted" />
                       <span className="matrix-title">SMTP Mailbox Check</span>
                     </div>
                     <span className={`matrix-status ${currentResult.smtpCheck ? 'status-pass' : 'status-fail'}`}>
@@ -807,11 +803,6 @@ export const SingleVerifyPage: React.FC = () => {
           color: var(--text-tertiary);
           display: flex;
           align-items: center;
-          gap: 5px;
-        }
-
-        .presets-caption-icon {
-          color: var(--accent-primary);
         }
 
         .presets-tags {

@@ -4,7 +4,7 @@ import type { ScreenId } from '../../types';
 import {
   MailCheck,
   Layers,
-  Zap,
+  Blocks,
   Code2,
   Coins,
   MapPin,
@@ -24,7 +24,7 @@ interface NavItem {
 const PRIMARY_NAV: NavItem[] = [
   { id: 'single', label: 'Single Verify', icon: MailCheck },
   { id: 'bulk', label: 'Bulk Verify', icon: Layers },
-  { id: 'integrations', label: 'Integrations', icon: Zap },
+  { id: 'integrations', label: 'Integrations', icon: Blocks },
   { id: 'api', label: 'API & Webhooks', icon: Code2 }
 ];
 
