@@ -200,16 +200,13 @@ export const Sidebar: React.FC = () => {
           flex-direction: column;
           flex-shrink: 0;
           height: 100vh;
-          position: sticky;
+          position: fixed;
           top: 0;
+          bottom: 0;
+          left: 0;
           z-index: 100;
           transition: width 0.18s cubic-bezier(0.16, 1, 0.3, 1);
           user-select: none;
-          transform: translate3d(0, 0, 0);
-          -webkit-transform: translate3d(0, 0, 0);
-          backface-visibility: hidden;
-          -webkit-backface-visibility: hidden;
-          overscroll-behavior: contain;
         }
 
         .sidebar.collapsed {

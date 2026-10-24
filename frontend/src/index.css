@@ -100,16 +100,7 @@
   padding: 0;
 }
 
-html {
-  background-color: var(--bg-canvas);
-  color: var(--text-primary);
-  min-height: 100%;
-  overflow-x: hidden;
-  overscroll-behavior: none;
-  scrollbar-gutter: stable;
-}
-
-body {
+html, body {
   background-color: var(--bg-canvas);
   color: var(--text-primary);
   font-family: var(--font-sans);
@@ -119,34 +110,28 @@ body {
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'tnum', 'ss01';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  min-height: 100%;
-  overflow-x: hidden;
-  overscroll-behavior: none;
-  overflow-anchor: none;
 }
 
 #root {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
-  overscroll-behavior: none;
 }
 
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: var(--radius-full);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.28);
 }
 
 /* Typography Utilities */
@@ -220,7 +205,6 @@ code, pre {
     radial-gradient(ellipse 90% 45% at 50% -12%, rgba(255, 100, 31, 0.045), transparent 70%),
     radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.015), transparent 40%);
   position: relative;
-  overflow-x: hidden;
 }
 
 .app-main {
@@ -228,7 +212,20 @@ code, pre {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  margin-left: var(--sidebar-width);
+  transition: margin-left 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
+}
+
+.app-layout.sidebar-collapsed .app-main {
+  margin-left: var(--sidebar-collapsed-width);
+}
+
+@media (max-width: 768px) {
+  .app-main,
+  .app-layout.sidebar-collapsed .app-main {
+    margin-left: 0;
+  }
 }
 
 .page-container {

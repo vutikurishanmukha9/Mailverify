@@ -16,7 +16,7 @@ import { SupportPage } from './pages/SupportPage';
 import { SettingsPage } from './pages/SettingsPage';
 
 const AppContent: React.FC = () => {
-  const { screen } = useApp();
+  const { screen, isSidebarCollapsed } = useApp();
 
   React.useEffect(() => {
     const titles: Record<string, string> = {
@@ -33,7 +33,7 @@ const AppContent: React.FC = () => {
   }, [screen]);
 
   return (
-    <div className="app-layout">
+    <div className={`app-layout ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
       {/* Persistent Enterprise Sidebar */}
       <Sidebar />
 
