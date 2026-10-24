@@ -1149,6 +1149,7 @@ export const BulkVerifyPage: React.FC = () => {
           flex-direction: column;
           max-height: 600px;
           overflow-y: auto;
+          overscroll-behavior: contain;
         }
 
         .job-card {

@@ -121,6 +121,11 @@ export const Header: React.FC = () => {
           position: sticky;
           top: 0;
           z-index: 90;
+          transform: translate3d(0, 0, 0);
+          -webkit-transform: translate3d(0, 0, 0);
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
+          will-change: transform;
         }
 
         .header-left {

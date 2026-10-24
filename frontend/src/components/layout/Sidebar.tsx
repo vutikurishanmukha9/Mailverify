@@ -205,6 +205,11 @@ export const Sidebar: React.FC = () => {
           z-index: 100;
           transition: width 0.18s cubic-bezier(0.16, 1, 0.3, 1);
           user-select: none;
+          transform: translate3d(0, 0, 0);
+          -webkit-transform: translate3d(0, 0, 0);
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
+          overscroll-behavior: contain;
         }
 
         .sidebar.collapsed {
@@ -287,6 +292,7 @@ export const Sidebar: React.FC = () => {
         .sidebar-nav-scroll {
           flex: 1;
           overflow-y: auto;
+          overscroll-behavior: contain;
           padding: 18px 12px;
           display: flex;
           flex-direction: column;
