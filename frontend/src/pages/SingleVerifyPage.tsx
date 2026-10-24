@@ -197,7 +197,6 @@ export const SingleVerifyPage: React.FC = () => {
               variant="primary"
               size="sm"
               isLoading={isLoading}
-              leftIcon={<Zap size={13} />}
               className="verify-command-btn"
             >
               Verify Mailbox
