@@ -703,6 +703,11 @@ func main() {
             font-size: 11px;
             padding: 10px;
           }
+          .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+          }
         }
       `}</style>
     </div>

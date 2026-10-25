@@ -16,9 +16,11 @@ import type {
   CreditPackage,
   RoadmapItem,
   SupportTicket,
+  TicketAttachment,
   ToastMessage
 } from '../types';
 import { verifyRecordForBulk } from '../utils/verifier';
+import { SupportBackendService, type CreateTicketParams } from '../services/supportBackend';
 
 interface AppContextType {
   // Navigation
@@ -67,7 +69,19 @@ interface AppContextType {
   upvoteRoadmap: (id: string) => void;
   submitRoadmapSuggestion: (title: string, description: string, category: RoadmapItem['category']) => void;
   supportTickets: SupportTicket[];
-  createSupportTicket: (subject: string, category: SupportTicket['category'], severity: SupportTicket['severity'], message: string) => void;
+  createSupportTicket: (
+    subjectOrParams: string | CreateTicketParams,
+    category?: SupportTicket['category'],
+    severity?: SupportTicket['severity'],
+    message?: string
+  ) => Promise<SupportTicket>;
+  addTicketReply: (
+    ticketId: string,
+    text: string,
+    sender?: 'user' | 'support',
+    attachments?: TicketAttachment[]
+  ) => Promise<SupportTicket>;
+  reopenTicket: (ticketId: string) => Promise<SupportTicket>;
 
   // Global Toasts
   toasts: ToastMessage[];
@@ -336,31 +350,6 @@ const INITIAL_ROADMAP: RoadmapItem[] = [
   }
 ];
 
-const INITIAL_SUPPORT_TICKETS: SupportTicket[] = [
-  {
-    id: 'TICK-4029',
-    subject: 'Catch-all domain deliverability guidance for Microsoft 365',
-    category: 'Deliverability',
-    severity: 'normal',
-    status: 'resolved',
-    createdAt: '2026-10-12 11:20',
-    lastUpdate: '2026-10-12 15:45',
-    messages: [
-      {
-        sender: 'user',
-        senderName: 'Shanmukh V.',
-        time: '11:20 AM',
-        text: 'Hello, our marketing team is noticing Microsoft 365 addresses occasionally returning as Risky (Catch-all). What is the safest sending recommendation?'
-      },
-      {
-        sender: 'support',
-        senderName: 'David (MailVerify Engineering)',
-        time: '12:05 PM',
-        text: 'Hi Shanmukh, Microsoft 365 domains frequently configure SMTP catch-all to prevent directory harvesting. We mark these as Risky because the server accepts any recipient at the handshake stage. We recommend sending at lower volume or segmenting catch-alls into separate warm-up campaigns.'
-      }
-    ]
-  }
-];
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Navigation
@@ -492,7 +481,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Roadmap & Support
   const [roadmapItems, setRoadmapItems] = useState<RoadmapItem[]>(INITIAL_ROADMAP);
-  const [supportTickets, setSupportTickets] = useState<SupportTicket[]>(INITIAL_SUPPORT_TICKETS);
+  const [supportTickets, setSupportTickets] = useState<SupportTicket[]>(() => {
+    try {
+      const saved = localStorage.getItem('mv_support_tickets_v3');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.warn('Failed to load tickets', e);
+    }
+    return [];
+  });
+
+  useEffect(() => {
+    SupportBackendService.getTickets().then((ticks) => {
+      setSupportTickets(ticks);
+    });
+  }, []);
 
   // Toasts
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -783,36 +786,64 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  const createSupportTicket = (
-    subject: string,
-    category: SupportTicket['category'],
-    severity: SupportTicket['severity'],
-    message: string
-  ) => {
-    const newTicket: SupportTicket = {
-      id: `TICK-${Math.floor(1000 + Math.random() * 9000)}`,
-      subject: subject.trim(),
-      category,
-      severity,
-      status: 'open',
-      createdAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
-      lastUpdate: 'Just now',
-      messages: [
-        {
-          sender: 'user',
-          senderName: userProfile.name,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          text: message.trim()
-        }
-      ]
-    };
+  const createSupportTicket = async (
+    subjectOrParams: string | CreateTicketParams,
+    category?: SupportTicket['category'],
+    severity?: SupportTicket['severity'],
+    message?: string
+  ): Promise<SupportTicket> => {
+    let params: CreateTicketParams;
 
+    if (typeof subjectOrParams === 'object') {
+      params = subjectOrParams;
+    } else {
+      params = {
+        subject: subjectOrParams,
+        category: category || 'Deliverability',
+        priority: severity || 'normal',
+        description: message || '',
+        issueType: 'technical',
+        contactEmail: userProfile.email
+      };
+    }
+
+    const newTicket = await SupportBackendService.createTicket(params);
     setSupportTickets(prev => [newTicket, ...prev]);
+
     addToast({
       type: 'success',
       title: 'Support Ticket Submitted',
-      message: `Ticket #${newTicket.id} received. Our technical team usually responds within 2 hours.`
+      message: `Ticket #${newTicket.id} received. Response SLA is < 2 hours.`
     });
+
+    return newTicket;
+  };
+
+  const addTicketReply = async (
+    ticketId: string,
+    text: string,
+    sender: 'user' | 'support' = 'user',
+    attachments?: TicketAttachment[]
+  ): Promise<SupportTicket> => {
+    const updated = await SupportBackendService.addReply(ticketId, text, sender, attachments);
+    setSupportTickets(prev => prev.map(t => t.id === ticketId ? updated : t));
+    addToast({
+      type: 'success',
+      title: 'Reply Sent',
+      message: 'Your reply has been added to the ticket thread.'
+    });
+    return updated;
+  };
+
+  const reopenTicket = async (ticketId: string): Promise<SupportTicket> => {
+    const updated = await SupportBackendService.reopenTicket(ticketId);
+    setSupportTickets(prev => prev.map(t => t.id === ticketId ? updated : t));
+    addToast({
+      type: 'info',
+      title: 'Ticket Reopened',
+      message: `Ticket #${ticketId} has been reopened for additional investigation.`
+    });
+    return updated;
   };
 
   return (
@@ -856,6 +887,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         submitRoadmapSuggestion,
         supportTickets,
         createSupportTicket,
+        addTicketReply,
+        reopenTicket,
         toasts,
         addToast,
         removeToast

@@ -399,9 +399,17 @@ export const BuyCreditsPage: React.FC = () => {
           justify-content: space-between;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
+          .packages-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+          }
+        }
+
+        @media (max-width: 640px) {
           .packages-grid {
             grid-template-columns: 1fr;
+            gap: 12px;
           }
           .balance-banner-row {
             flex-direction: column;

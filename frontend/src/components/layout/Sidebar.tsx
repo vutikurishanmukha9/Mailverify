@@ -8,10 +8,11 @@ import {
   Code2,
   Coins,
   MapPin,
-  HelpCircle,
   Settings,
+  LifeBuoy,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  X
 } from 'lucide-react';
 
 interface NavItem {
@@ -31,8 +32,8 @@ const PRIMARY_NAV: NavItem[] = [
 const MANAGEMENT_NAV: NavItem[] = [
   { id: 'buy-credits', label: 'Buy Credits', icon: Coins },
   { id: 'roadmap', label: 'Roadmap', icon: MapPin },
-  { id: 'support', label: 'Help & Support', icon: HelpCircle },
-  { id: 'settings', label: 'Settings', icon: Settings }
+  { id: 'settings', label: 'Settings', icon: Settings },
+  { id: 'support', label: 'Help & Support', icon: LifeBuoy }
 ];
 
 export const Sidebar: React.FC = () => {
@@ -83,6 +84,13 @@ export const Sidebar: React.FC = () => {
             aria-label="Toggle sidebar collapse"
           >
             {isSidebarCollapsed ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
+          </button>
+          <button
+            className="sidebar-close-btn mobile-only"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-label="Close mobile navigation"
+          >
+            <X size={15} />
           </button>
         </div>
 
@@ -524,13 +532,37 @@ export const Sidebar: React.FC = () => {
           margin: 0 auto;
         }
 
+        .sidebar-close-btn {
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid var(--border-standard);
+          color: var(--text-secondary);
+          width: 30px;
+          height: 30px;
+          border-radius: var(--radius-xs);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.12s ease;
+        }
+        .sidebar-close-btn:hover {
+          color: var(--text-primary);
+          background-color: var(--bg-hover);
+        }
+
+        @media (max-width: 1024px) {
+          .nav-item {
+            padding: 8px 10px;
+          }
+        }
+
         @media (max-width: 768px) {
           .sidebar {
             position: fixed;
             left: -280px;
             top: 0;
             bottom: 0;
-            width: 270px !important;
+            width: 275px !important;
             max-width: 85vw;
             z-index: 1000;
             transition: left 0.22s cubic-bezier(0.16, 1, 0.3, 1);
@@ -540,7 +572,10 @@ export const Sidebar: React.FC = () => {
             left: 0;
           }
           .desktop-only {
-            display: none;
+            display: none !important;
+          }
+          .mobile-only {
+            display: flex !important;
           }
         }
       `}</style>

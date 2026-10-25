@@ -8,9 +8,11 @@ import {
   RefreshCw,
   AlertTriangle
 } from 'lucide-react';
-import { Button } from '../components/common/Button';
-import { Badge } from '../components/common/Badge';
-import { Card, CardBody } from '../components/common/Card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardBody } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
 import { Modal } from '../components/common/Modal';
 
 export const IntegrationsPage: React.FC = () => {
@@ -103,32 +105,24 @@ export const IntegrationsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="tab-pill-nav" style={{ marginBottom: 20 }}>
-        <button
-          className={`tab-pill-btn ${filterTab === 'all' ? 'active' : ''}`}
-          onClick={() => setFilterTab('all')}
-        >
-          All Platforms ({integrations.length})
-        </button>
-        <button
-          className={`tab-pill-btn ${filterTab === 'connected' ? 'active' : ''}`}
-          onClick={() => setFilterTab('connected')}
-        >
-          Connected ({integrations.filter((i) => i.status === 'connected').length})
-        </button>
-        <button
-          className={`tab-pill-btn ${filterTab === 'available' ? 'active' : ''}`}
-          onClick={() => setFilterTab('available')}
-        >
-          Available ({integrations.filter((i) => i.status === 'disconnected').length})
-        </button>
-        <button
-          className={`tab-pill-btn ${filterTab === 'upcoming' ? 'active' : ''}`}
-          onClick={() => setFilterTab('upcoming')}
-        >
-          Roadmapped ({integrations.filter((i) => i.status === 'coming_soon').length})
-        </button>
+      {/* Modern Radix / shadcn Filter Tabs */}
+      <div className="mb-5">
+        <Tabs value={filterTab} onValueChange={(val) => setFilterTab(val as typeof filterTab)}>
+          <TabsList>
+            <TabsTrigger value="all">
+              All Platforms ({integrations.length})
+            </TabsTrigger>
+            <TabsTrigger value="connected">
+              Connected ({integrations.filter((i) => i.status === 'connected').length})
+            </TabsTrigger>
+            <TabsTrigger value="available">
+              Available ({integrations.filter((i) => i.status === 'disconnected').length})
+            </TabsTrigger>
+            <TabsTrigger value="upcoming">
+              Roadmapped ({integrations.filter((i) => i.status === 'coming_soon').length})
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
       {/* Integrations Grid */}
@@ -270,9 +264,9 @@ export const IntegrationsPage: React.FC = () => {
           <div className="config-form">
             <div className="form-group">
               <label className="form-label">API Key or Workspace Access Token</label>
-              <input
+              <Input
                 type="password"
-                className="input input-mono"
+                className="font-mono text-xs"
                 placeholder="e.g. ri_live_9a8b7c6d5e4f3a2b1c"
                 value={apiKeyInput}
                 onChange={(e) => setApiKeyInput(e.target.value)}
@@ -462,9 +456,17 @@ export const IntegrationsPage: React.FC = () => {
           gap: var(--space-4);
         }
 
+        @media (max-width: 1024px) {
+          .integrations-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+          }
+        }
+
         @media (max-width: 768px) {
           .integrations-grid {
             grid-template-columns: 1fr;
+            gap: 12px;
           }
         }
       `}</style>

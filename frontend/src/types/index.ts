@@ -7,8 +7,8 @@ export type ScreenId =
   | 'api'
   | 'buy-credits'
   | 'roadmap'
-  | 'support'
-  | 'settings';
+  | 'settings'
+  | 'support';
 
 export type SettingsTabId =
   | 'profile'
@@ -187,20 +187,97 @@ export interface RoadmapItem {
   hasVoted?: boolean;
 }
 
-export interface SupportTicket {
+export type TicketStatus = 'open' | 'in_progress' | 'waiting_user' | 'awaiting_reply' | 'resolved' | 'closed';
+
+export type TicketPriority = 'low' | 'normal' | 'high' | 'urgent';
+
+export type TicketCategory =
+  | 'Deliverability'
+  | 'Cold Outreach Integrations'
+  | 'API & Webhooks'
+  | 'Billing & Credits'
+  | 'Account & Security'
+  | 'Data & Exports'
+  | 'General';
+
+export type TicketIssueType =
+  | 'bug'
+  | 'technical'
+  | 'account'
+  | 'billing'
+  | 'feature'
+  | 'other';
+
+export interface TicketAttachment {
   id: string;
+  name: string;
+  size: number; // in bytes
+  type: string;
+  dataUrl?: string;
+  uploadedAt: string;
+}
+
+export interface TicketTimelineEvent {
+  id: string;
+  type: 'created' | 'status_change' | 'support_reply' | 'user_reply' | 'reopened' | 'assigned';
+  description: string;
+  timestamp: string;
+  actor: string;
+}
+
+export interface TicketMessage {
+  id: string;
+  sender: 'user' | 'support';
+  senderName: string;
+  senderRole?: string;
+  time: string;
+  text: string;
+  attachments?: TicketAttachment[];
+}
+
+export interface SupportTicket {
+  id: string; // e.g. TICK-4029
+  ticketNumber?: string;
+  userId?: string;
+  contactEmail: string;
   subject: string;
-  category: 'Deliverability' | 'API & Webhooks' | 'Billing & Credits' | 'Integration' | 'General';
-  severity: 'low' | 'normal' | 'high' | 'urgent';
-  status: 'open' | 'awaiting_reply' | 'resolved';
+  description: string;
+  category: TicketCategory;
+  issueType: TicketIssueType;
+  productModule?: string;
+  priority: TicketPriority;
+  severity: TicketPriority; // Alias for backward compatibility
+  status: TicketStatus;
   createdAt: string;
   lastUpdate: string;
-  messages: Array<{
-    sender: 'user' | 'support';
-    senderName: string;
-    time: string;
-    text: string;
-  }>;
+  updatedAt?: string;
+  resolvedAt?: string;
+  conversationSummary?: string;
+  attachments?: TicketAttachment[];
+  timeline: TicketTimelineEvent[];
+  messages: TicketMessage[];
+}
+
+export interface FaqArticle {
+  id: string;
+  category:
+    | 'Getting Started'
+    | 'Account and Profile'
+    | 'Authentication and Security'
+    | 'Product Features'
+    | 'Usage and Limits'
+    | 'Billing and Payments'
+    | 'Data, Imports, and Exports'
+    | 'Troubleshooting'
+    | 'Privacy and Data Protection'
+    | 'Other Questions';
+  question: string;
+  answer: string;
+  relatedLink?: {
+    label: string;
+    screen: ScreenId;
+  };
+  helpfulCount: number;
 }
 
 export interface ToastMessage {

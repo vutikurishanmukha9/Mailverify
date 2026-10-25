@@ -21,11 +21,11 @@ import {
   Filter,
   Building2,
   FileCode,
-  X
+  X,
+  ChevronDown
 } from 'lucide-react';
-import { Button } from '../components/common/Button';
-import { DeliverabilityBadge } from '../components/common/Badge';
-import { Card, CardBody } from '../components/common/Card';
+import { Button } from '@/components/ui/button';
+import { DeliverabilityBadge } from '@/components/ui/badge';
 
 const SAMPLE_PRESETS = [
   { label: 'Corporate Lead', email: 'elena.rostova@datadog.com', icon: Building2 },
@@ -255,17 +255,41 @@ export const SingleVerifyPage: React.FC = () => {
       {/* Detailed Result & Inspection Console */}
       {currentResult && (
         <div className="result-console">
-          <Card className="result-card">
-            {/* Header: Email, Deliverability Badge, Actions */}
-            <div className="result-header">
-              <div className="result-title-group">
-                <span className="result-email-address font-mono">{currentResult.email}</span>
-                <DeliverabilityBadge
-                  status={currentResult.status}
-                  score={currentResult.score}
-                />
+          <div className="result-card">
+            {/* 1. Executive Hero Overview Banner */}
+            <div className="result-hero-banner">
+              <div className="hero-main-col">
+                <div className="hero-identity-row">
+                  <h2 className="hero-email font-mono">{currentResult.email}</h2>
+                  <DeliverabilityBadge
+                    status={currentResult.status}
+                    score={currentResult.score}
+                  />
+                </div>
+
+                <div className="hero-verdict-row">
+                  <span className={`verdict-pip pip-${currentResult.status}`} />
+                  <span className="hero-verdict-text">{currentResult.reason}</span>
+                </div>
+
+                <div className="hero-meta-pills">
+                  <span className="hero-meta-pill" title="Round-trip handshake latency">
+                    <Clock size={11} className="hero-pill-icon" />
+                    <span>{currentResult.latencyMs}ms latency</span>
+                  </span>
+                  <span className="hero-meta-pill" title={`Designated MX: ${currentResult.mxHost}`}>
+                    <Server size={11} className="hero-pill-icon" />
+                    <span className="font-mono">{currentResult.mxHost}</span>
+                  </span>
+                  <span className="hero-meta-pill" title="IETF RFC-5322 Syntax Specification">
+                    <FileCode size={11} className="hero-pill-icon" />
+                    <span>RFC 5322 Compliant</span>
+                  </span>
+                </div>
               </div>
-              <div className="result-actions">
+
+              {/* Right Side: Action Buttons */}
+              <div className="hero-actions-row">
                 <Button
                   variant="outline"
                   size="sm"
@@ -286,173 +310,198 @@ export const SingleVerifyPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Verdict Summary Strip with Deliverability Score Gauge */}
-            <div className="verdict-summary-strip">
-              <div className="verdict-summary-left">
-                <span className={`verdict-pip pip-${currentResult.status}`} />
-                <span className="verdict-text">{currentResult.reason}</span>
+            {/* 2. Diagnostic Inspection Sections */}
+            <div className="result-body-content">
+              {/* Category A: Server & Handshake Validation */}
+              <div className="diag-group">
+                <div className="diag-group-header">
+                  <Server size={12} className="diag-group-icon" />
+                  <span>MAIL SERVER & PROTOCOL VALIDATION</span>
+                </div>
+                <div className="diag-grid">
+                  {/* 1. Syntax */}
+                  <div className="diag-card">
+                    <div className="diag-card-top">
+                      <div className="diag-title-wrap">
+                        <div className="diag-icon-box">
+                          <FileCode size={12} />
+                        </div>
+                        <span className="diag-title">RFC 5322 Syntax</span>
+                      </div>
+                      <span className={`diag-badge ${currentResult.syntaxValid ? 'badge-pass' : 'badge-fail'}`}>
+                        <span className="diag-dot" />
+                        {currentResult.syntaxValid ? 'Valid' : 'Syntax Error'}
+                      </span>
+                    </div>
+                    <div className="diag-value">
+                      {currentResult.syntaxValid ? 'Compliant Format' : 'Malformed Address'}
+                    </div>
+                    <div className="diag-desc">
+                      Verified against official IETF mail standard syntax.
+                    </div>
+                  </div>
+
+                  {/* 2. DNS MX */}
+                  <div className="diag-card">
+                    <div className="diag-card-top">
+                      <div className="diag-title-wrap">
+                        <div className="diag-icon-box">
+                          <Server size={12} />
+                        </div>
+                        <span className="diag-title">DNS MX Records</span>
+                      </div>
+                      <span className={`diag-badge ${currentResult.mxRecordsFound ? 'badge-pass' : 'badge-fail'}`}>
+                        <span className="diag-dot" />
+                        {currentResult.mxRecordsFound ? 'Resolved' : 'No Records'}
+                      </span>
+                    </div>
+                    <div className="diag-value font-mono" title={currentResult.mxHost}>
+                      {currentResult.mxHost}
+                    </div>
+                    <div className="diag-desc">
+                      Authoritative mail exchangers active and routing mail.
+                    </div>
+                  </div>
+
+                  {/* 3. SMTP Mailbox */}
+                  <div className="diag-card">
+                    <div className="diag-card-top">
+                      <div className="diag-title-wrap">
+                        <div className="diag-icon-box">
+                          <Send size={12} />
+                        </div>
+                        <span className="diag-title">SMTP Mailbox Check</span>
+                      </div>
+                      <span className={`diag-badge ${currentResult.smtpCheck ? 'badge-pass' : 'badge-fail'}`}>
+                        <span className="diag-dot" />
+                        {currentResult.smtpCheck ? 'Accepted' : 'Rejected'}
+                      </span>
+                    </div>
+                    <div className="diag-value font-mono">
+                      {currentResult.smtpResponse}
+                    </div>
+                    <div className="diag-desc">
+                      Direct handshake simulated without sending a test message.
+                    </div>
+                  </div>
+
+                  {/* 4. Catch-all */}
+                  <div className="diag-card">
+                    <div className="diag-card-top">
+                      <div className="diag-title-wrap">
+                        <div className="diag-icon-box">
+                          <Filter size={12} />
+                        </div>
+                        <span className="diag-title">Catch-all Config</span>
+                      </div>
+                      <span className={`diag-badge ${!currentResult.isCatchAll ? 'badge-pass' : 'badge-warn'}`}>
+                        <span className="diag-dot" />
+                        {!currentResult.isCatchAll ? 'Explicit' : 'Catch-all'}
+                      </span>
+                    </div>
+                    <div className="diag-value">
+                      {!currentResult.isCatchAll ? 'Explicit Mailbox' : 'Domain Accepts All'}
+                    </div>
+                    <div className="diag-desc">
+                      {!currentResult.isCatchAll ? 'Server only accepts verified recipient accounts.' : 'Server accepts any address on this domain.'}
+                    </div>
+                  </div>
+                </div>
               </div>
-              
-              {/* Deliverability Meter Gauge */}
-              <div className="deliverability-score-gauge">
-                <div className="gauge-label-row font-mono tabular-nums">
-                  <span className="gauge-label">Deliverability Score:</span>
-                  <span className={`gauge-value ${currentResult.score >= 80 ? 'text-success' : currentResult.score >= 50 ? 'text-warning' : 'text-error'}`}>
-                    {currentResult.score}/100
-                  </span>
-                </div>
-                <div className="gauge-track">
-                  <div
-                    className={`gauge-fill ${currentResult.score >= 80 ? 'fill-success' : currentResult.score >= 50 ? 'fill-warning' : 'fill-error'}`}
-                    style={{ width: `${currentResult.score}%` }}
-                  />
-                </div>
-              </div>
 
-              <div className="verdict-meta-group font-mono tabular-nums">
-                <span className="verdict-meta-item">
-                  <Clock size={11} /> {currentResult.latencyMs}ms
-                </span>
-                <span className="verdict-meta-item">
-                  <Server size={11} /> {currentResult.mxHost}
-                </span>
-              </div>
-            </div>
-
-            <CardBody compact>
-              {/* 8-Point Diagnostic Checks Grid */}
-              <div className="diagnostics-matrix">
-                {/* 1. Syntax */}
-                <div className="matrix-cell">
-                  <div className="matrix-top">
-                    <div className="matrix-title-wrap">
-                      <FileCode size={13} className="matrix-icon text-muted" />
-                      <span className="matrix-title">RFC 5322 Syntax</span>
+              {/* Category B: Reputation & Safety Checks */}
+              <div className="diag-group">
+                <div className="diag-group-header">
+                  <ShieldCheck size={12} className="diag-group-icon" />
+                  <span>REPUTATION & INBOX ATTRIBUTES</span>
+                </div>
+                <div className="diag-grid">
+                  {/* 5. Disposable */}
+                  <div className="diag-card">
+                    <div className="diag-card-top">
+                      <div className="diag-title-wrap">
+                        <div className="diag-icon-box">
+                          <Trash2 size={12} />
+                        </div>
+                        <span className="diag-title">Disposable Email</span>
+                      </div>
+                      <span className={`diag-badge ${!currentResult.isDisposable ? 'badge-pass' : 'badge-fail'}`}>
+                        <span className="diag-dot" />
+                        {!currentResult.isDisposable ? 'Clean' : 'Disposable'}
+                      </span>
                     </div>
-                    <span className={`matrix-status ${currentResult.syntaxValid ? 'status-pass' : 'status-fail'}`}>
-                      <span className={`matrix-dot ${currentResult.syntaxValid ? 'dot-pass' : 'dot-fail'}`} />
-                      {currentResult.syntaxValid ? 'Valid' : 'Syntax Error'}
-                    </span>
-                  </div>
-                  <div className="matrix-meta font-sans">Complies with IETF RFC mail standard.</div>
-                </div>
-
-                {/* 2. DNS MX */}
-                <div className="matrix-cell">
-                  <div className="matrix-top">
-                    <div className="matrix-title-wrap">
-                      <Server size={13} className="matrix-icon text-muted" />
-                      <span className="matrix-title">DNS MX Resolution</span>
+                    <div className="diag-value">
+                      {!currentResult.isDisposable ? 'Legitimate Domain' : 'Temporary Burner'}
                     </div>
-                    <span className={`matrix-status ${currentResult.mxRecordsFound ? 'status-pass' : 'status-fail'}`}>
-                      <span className={`matrix-dot ${currentResult.mxRecordsFound ? 'dot-pass' : 'dot-fail'}`} />
-                      {currentResult.mxRecordsFound ? 'Resolved' : 'No MX Records'}
-                    </span>
-                  </div>
-                  <div className="matrix-meta font-mono" title={currentResult.mxHost}>
-                    Host: {currentResult.mxHost}
-                  </div>
-                </div>
-
-                {/* 3. SMTP Mailbox */}
-                <div className="matrix-cell">
-                  <div className="matrix-top">
-                    <div className="matrix-title-wrap">
-                      <Send size={13} className="matrix-icon text-muted" />
-                      <span className="matrix-title">SMTP Mailbox Check</span>
+                    <div className="diag-desc">
+                      {!currentResult.isDisposable ? 'Not registered on temporary or burner inbox lists.' : 'Temporary burner address that will expire.'}
                     </div>
-                    <span className={`matrix-status ${currentResult.smtpCheck ? 'status-pass' : 'status-fail'}`}>
-                      <span className={`matrix-dot ${currentResult.smtpCheck ? 'dot-pass' : 'dot-fail'}`} />
-                      {currentResult.smtpCheck ? 'Accepted (250)' : 'Rejected (550)'}
-                    </span>
                   </div>
-                  <div className="matrix-meta font-mono">
-                    {currentResult.smtpResponse}
-                  </div>
-                </div>
 
-                {/* 4. Disposable */}
-                <div className="matrix-cell">
-                  <div className="matrix-top">
-                    <div className="matrix-title-wrap">
-                      <Trash2 size={13} className="matrix-icon text-muted" />
-                      <span className="matrix-title">Disposable Email</span>
+                  {/* 6. Provider Type */}
+                  <div className="diag-card">
+                    <div className="diag-card-top">
+                      <div className="diag-title-wrap">
+                        <div className="diag-icon-box">
+                          <Globe size={12} />
+                        </div>
+                        <span className="diag-title">Provider Type</span>
+                      </div>
+                      <span className="diag-badge badge-neutral">
+                        <span className="diag-dot" />
+                        {currentResult.isFreeMail ? 'Free' : 'Corporate'}
+                      </span>
                     </div>
-                    <span className={`matrix-status ${!currentResult.isDisposable ? 'status-pass' : 'status-fail'}`}>
-                      <span className={`matrix-dot ${!currentResult.isDisposable ? 'dot-pass' : 'dot-fail'}`} />
-                      {!currentResult.isDisposable ? 'Clean' : 'Disposable Burner'}
-                    </span>
+                    <div className="diag-value">
+                      {currentResult.isFreeMail ? 'Consumer Webmail' : 'Custom Corporate'}
+                    </div>
+                    <div className="diag-desc">
+                      {currentResult.isFreeMail ? 'Standard public provider (Gmail, Yahoo, Outlook).' : 'Enterprise business infrastructure on private domain.'}
+                    </div>
                   </div>
-                  <div className="matrix-meta font-sans">
-                    {!currentResult.isDisposable ? 'Verified clean domain.' : 'Temporary burner inbox.'}
-                  </div>
-                </div>
 
-                {/* 5. Provider Type */}
-                <div className="matrix-cell">
-                  <div className="matrix-top">
-                    <div className="matrix-title-wrap">
-                      <Globe size={13} className="matrix-icon text-muted" />
-                      <span className="matrix-title">Provider Type</span>
+                  {/* 7. Role Account */}
+                  <div className="diag-card">
+                    <div className="diag-card-top">
+                      <div className="diag-title-wrap">
+                        <div className="diag-icon-box">
+                          <Users size={12} />
+                        </div>
+                        <span className="diag-title">Recipient Type</span>
+                      </div>
+                      <span className={`diag-badge ${!currentResult.isRoleBased ? 'badge-pass' : 'badge-warn'}`}>
+                        <span className="diag-dot" />
+                        {!currentResult.isRoleBased ? 'Individual' : 'Role Account'}
+                      </span>
                     </div>
-                    <span className="matrix-status status-neutral">
-                      <span className="matrix-dot dot-neutral" />
-                      {currentResult.isFreeMail ? 'Free Webmail' : 'Custom Corporate'}
-                    </span>
+                    <div className="diag-value">
+                      {!currentResult.isRoleBased ? 'Direct Personal Mailbox' : 'Shared Department Role'}
+                    </div>
+                    <div className="diag-desc">
+                      {!currentResult.isRoleBased ? 'Specific individual employee or recipient account.' : 'Shared team inbox (support@, billing@, sales@).'}
+                    </div>
                   </div>
-                  <div className="matrix-meta font-sans">
-                    {currentResult.isFreeMail ? 'Consumer mailbox (Gmail/Yahoo).' : 'Corporate business domain.'}
-                  </div>
-                </div>
 
-                {/* 6. Role Account */}
-                <div className="matrix-cell">
-                  <div className="matrix-top">
-                    <div className="matrix-title-wrap">
-                      <Users size={13} className="matrix-icon text-muted" />
-                      <span className="matrix-title">Role-based Mailbox</span>
+                  {/* 8. Spam Trap */}
+                  <div className="diag-card">
+                    <div className="diag-card-top">
+                      <div className="diag-title-wrap">
+                        <div className="diag-icon-box">
+                          <ShieldCheck size={12} />
+                        </div>
+                        <span className="diag-title">Spam Trap Risk</span>
+                      </div>
+                      <span className={`diag-badge ${currentResult.spamTrapScore < 20 ? 'badge-pass' : 'badge-fail'}`}>
+                        <span className="diag-dot" />
+                        {currentResult.spamTrapScore < 20 ? '0% Risk' : `${currentResult.spamTrapScore}% Risk`}
+                      </span>
                     </div>
-                    <span className={`matrix-status ${!currentResult.isRoleBased ? 'status-pass' : 'status-warn'}`}>
-                      <span className={`matrix-dot ${!currentResult.isRoleBased ? 'dot-pass' : 'dot-warn'}`} />
-                      {!currentResult.isRoleBased ? 'Individual' : 'Team / Role'}
-                    </span>
-                  </div>
-                  <div className="matrix-meta font-sans">
-                    {!currentResult.isRoleBased ? 'Direct personal employee inbox.' : 'Shared team inbox (support@, billing@).'}
-                  </div>
-                </div>
-
-                {/* 7. Catch-all Domain */}
-                <div className="matrix-cell">
-                  <div className="matrix-top">
-                    <div className="matrix-title-wrap">
-                      <Filter size={13} className="matrix-icon text-muted" />
-                      <span className="matrix-title">Catch-all Config</span>
+                    <div className="diag-value">
+                      {currentResult.spamTrapScore < 20 ? 'Zero Honeypot Risk' : 'High Trap Probability'}
                     </div>
-                    <span className={`matrix-status ${!currentResult.isCatchAll ? 'status-pass' : 'status-warn'}`}>
-                      <span className={`matrix-dot ${!currentResult.isCatchAll ? 'dot-pass' : 'dot-warn'}`} />
-                      {!currentResult.isCatchAll ? 'Explicit Routing' : 'Catch-all Active'}
-                    </span>
-                  </div>
-                  <div className="matrix-meta font-sans">
-                    {!currentResult.isCatchAll ? 'Mailbox verified explicitly.' : 'Server accepts all domain addresses.'}
-                  </div>
-                </div>
-
-                {/* 8. Spam Trap */}
-                <div className="matrix-cell">
-                  <div className="matrix-top">
-                    <div className="matrix-title-wrap">
-                      <ShieldCheck size={13} className="matrix-icon text-muted" />
-                      <span className="matrix-title">Spam Trap Assessment</span>
+                    <div className="diag-desc">
+                      {currentResult.spamTrapScore < 20 ? 'Domain has zero known spam trap or honeypot signatures.' : 'Address flagged as potential honeypot trap.'}
                     </div>
-                    <span className={`matrix-status ${currentResult.spamTrapScore < 20 ? 'status-pass' : 'status-fail'}`}>
-                      <span className={`matrix-dot ${currentResult.spamTrapScore < 20 ? 'dot-pass' : 'dot-fail'}`} />
-                      {currentResult.spamTrapScore < 20 ? '0% Risk' : `${currentResult.spamTrapScore}% Trap Risk`}
-                    </span>
-                  </div>
-                  <div className="matrix-meta font-sans">
-                    {currentResult.spamTrapScore < 20 ? 'Zero honeypot signatures.' : 'High toxic trap probability.'}
                   </div>
                 </div>
               </div>
@@ -465,21 +514,27 @@ export const SingleVerifyPage: React.FC = () => {
                   onClick={() => setIsRawJsonExpanded(!isRawJsonExpanded)}
                 >
                   <div className="json-btn-left">
-                    <Code size={13} />
-                    <span>Raw Telemetry Payload</span>
+                    <Code size={13} className="text-muted" />
+                    <span className="json-title">Raw Telemetry Payload</span>
+                    <span className="json-badge">JSON</span>
                   </div>
-                  <span className="json-expand-label font-mono">
-                    {isRawJsonExpanded ? 'Hide Payload' : 'Inspect JSON Payload'}
-                  </span>
+                  <div className="json-btn-right">
+                    <span className="json-expand-label font-mono">
+                      {isRawJsonExpanded ? 'Hide Payload' : 'Inspect JSON Payload'}
+                    </span>
+                    <ChevronDown size={13} className={`json-chevron ${isRawJsonExpanded ? 'open' : ''}`} />
+                  </div>
                 </button>
                 {isRawJsonExpanded && (
-                  <pre className="raw-json-code font-mono">
-                    {JSON.stringify(currentResult.rawJson, null, 2)}
-                  </pre>
+                  <div className="raw-json-body">
+                    <pre className="raw-json-code font-mono">
+                      {JSON.stringify(currentResult.rawJson, null, 2)}
+                    </pre>
+                  </div>
                 )}
               </div>
-            </CardBody>
-          </Card>
+            </div>
+          </div>
         </div>
       )}
 
@@ -855,214 +910,251 @@ export const SingleVerifyPage: React.FC = () => {
           border: 1px solid var(--border-standard);
           border-radius: var(--radius-md);
           overflow: hidden;
-          box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 4px 16px rgba(0, 0, 0, 0.4);
+          box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 8px 24px rgba(0, 0, 0, 0.45);
         }
 
-        .result-header {
+        /* 1. Executive Hero Overview Banner */
+        .result-hero-banner {
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           justify-content: space-between;
-          padding: 12px 16px;
+          padding: 18px 24px;
+          background: linear-gradient(180deg, #121418 0%, #0D0E11 100%);
           border-bottom: 1px solid var(--border-subtle);
-          background-color: #0E0F12;
-          flex-wrap: wrap;
+          gap: 20px;
+        }
+
+        .hero-main-col {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
           gap: 10px;
+          flex: 1;
+          min-width: 0;
         }
 
-        .result-title-group {
+        .hero-identity-row {
           display: flex;
           align-items: center;
-          gap: 10px;
-        }
-
-        .result-email-address {
-          font-size: 15px;
-          font-weight: 600;
-          color: var(--text-primary);
-          letter-spacing: -0.015em;
-        }
-
-        .result-actions {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
-
-        .verdict-summary-strip {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 10px 16px;
-          border-bottom: 1px solid var(--border-subtle);
-          background-color: rgba(255, 255, 255, 0.015);
           flex-wrap: wrap;
           gap: 12px;
         }
 
-        .verdict-summary-left {
+        .hero-email {
+          font-size: 18.5px;
+          font-weight: 700;
+          color: var(--text-primary);
+          letter-spacing: -0.02em;
+          word-break: break-all;
+        }
+
+        .hero-verdict-row {
           display: flex;
           align-items: center;
           gap: 8px;
-          flex: 1;
-          min-width: 240px;
         }
 
         .verdict-pip {
-          width: 6px;
-          height: 6px;
+          width: 7px;
+          height: 7px;
           border-radius: 50%;
           flex-shrink: 0;
         }
-        .pip-deliverable { background-color: var(--status-success); }
-        .pip-risky { background-color: var(--status-warning); }
-        .pip-undeliverable { background-color: var(--status-error); }
-
-        .verdict-text {
-          font-size: 12.5px;
-          color: var(--text-primary);
-          font-weight: 500;
+        .pip-deliverable {
+          background-color: var(--status-success);
+          box-shadow: 0 0 6px var(--status-success);
+        }
+        .pip-risky {
+          background-color: var(--status-warning);
+          box-shadow: 0 0 6px var(--status-warning);
+        }
+        .pip-undeliverable {
+          background-color: var(--status-error);
+          box-shadow: 0 0 6px var(--status-error);
         }
 
-        /* Deliverability Gauge Meter */
-        .deliverability-score-gauge {
+        .hero-verdict-text {
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--text-primary);
+          line-height: 1.4;
+        }
+
+        .hero-meta-pills {
+          display: flex;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-top: 4px;
+        }
+
+        .hero-meta-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 3px 8px;
+          background-color: rgba(255, 255, 255, 0.035);
+          border: 1px solid var(--border-subtle);
+          border-radius: var(--radius-xs);
+          font-size: 11px;
+          color: var(--text-secondary);
+        }
+
+        .hero-pill-icon {
+          color: var(--text-tertiary);
+          flex-shrink: 0;
+        }
+
+        /* Right Hero Column: Action Buttons */
+        .hero-actions-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-shrink: 0;
+        }
+
+        /* 2. Diagnostic Inspection Sections */
+        .result-body-content {
+          padding: 20px 24px;
           display: flex;
           flex-direction: column;
-          gap: 4px;
-          min-width: 170px;
+          gap: 20px;
         }
 
-        .gauge-label-row {
+        .diag-group {
           display: flex;
-          align-items: center;
-          justify-content: space-between;
-          font-size: 10.5px;
-        }
-
-        .gauge-label {
-          color: var(--text-muted);
-        }
-
-        .gauge-value {
-          font-weight: 600;
-        }
-
-        .gauge-track {
-          width: 100%;
-          height: 4px;
-          background-color: rgba(255, 255, 255, 0.08);
-          border-radius: var(--radius-full);
-          overflow: hidden;
-        }
-
-        .gauge-fill {
-          height: 100%;
-          border-radius: var(--radius-full);
-          transition: width 0.3s ease;
-        }
-        .fill-success { background-color: var(--status-success); }
-        .fill-warning { background-color: var(--status-warning); }
-        .fill-error { background-color: var(--status-error); }
-
-        .verdict-meta-group {
-          display: flex;
-          align-items: center;
+          flex-direction: column;
           gap: 10px;
         }
 
-        .verdict-meta-item {
-          display: inline-flex;
+        .diag-group-header {
+          display: flex;
           align-items: center;
-          gap: 4px;
-          font-size: 11px;
-          color: var(--text-muted);
+          gap: 6px;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.06em;
+          color: var(--text-tertiary);
         }
 
-        /* 8-Point Diagnostics Matrix */
-        .diagnostics-matrix {
+        .diag-group-icon {
+          color: var(--text-tertiary);
+        }
+
+        .diag-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 8px;
-          margin-bottom: 14px;
+          gap: 10px;
         }
 
-        .matrix-cell {
-          background-color: var(--bg-input);
+        .diag-card {
+          background-color: var(--bg-card);
           border: 1px solid var(--border-subtle);
           border-radius: var(--radius-sm);
-          padding: 10px 12px;
+          padding: 12px 14px;
           display: flex;
           flex-direction: column;
-          gap: 4px;
-          transition: border-color 0.12s ease;
+          gap: 6px;
+          transition: border-color 0.12s ease, background-color 0.12s ease;
         }
-        .matrix-cell:hover {
+        .diag-card:hover {
           border-color: var(--border-standard);
+          background-color: var(--bg-input);
         }
 
-        .matrix-top {
+        .diag-card-top {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 6px;
+          gap: 8px;
         }
 
-        .matrix-title-wrap {
+        .diag-title-wrap {
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 7px;
           min-width: 0;
         }
 
-        .matrix-icon {
+        .diag-icon-box {
+          width: 22px;
+          height: 22px;
+          border-radius: var(--radius-xs);
+          background-color: rgba(255, 255, 255, 0.04);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--text-secondary);
           flex-shrink: 0;
         }
 
-        .matrix-title {
-          font-size: 11px;
-          font-weight: 500;
-          color: var(--text-muted);
+        .diag-title {
+          font-size: 11.5px;
+          font-weight: 600;
+          color: var(--text-primary);
           white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
         }
 
-        .matrix-status {
+        .diag-badge {
           display: inline-flex;
           align-items: center;
           gap: 4px;
-          font-size: 10.5px;
+          padding: 2px 7px;
+          border-radius: var(--radius-full);
+          font-size: 10px;
           font-weight: 600;
           flex-shrink: 0;
         }
-        .matrix-dot {
+        .diag-badge.badge-pass {
+          background-color: var(--status-success-bg);
+          color: var(--status-success-text);
+          border: 1px solid var(--status-success-border);
+        }
+        .diag-badge.badge-fail {
+          background-color: var(--status-error-bg);
+          color: var(--status-error-text);
+          border: 1px solid var(--status-error-border);
+        }
+        .diag-badge.badge-warn {
+          background-color: var(--status-warning-bg);
+          color: var(--status-warning-text);
+          border: 1px solid var(--status-warning-border);
+        }
+        .diag-badge.badge-neutral {
+          background-color: rgba(255, 255, 255, 0.05);
+          color: var(--text-secondary);
+          border: 1px solid var(--border-subtle);
+        }
+
+        .diag-dot {
           width: 5px;
           height: 5px;
           border-radius: 50%;
+          background-color: currentColor;
           display: inline-block;
         }
-        .dot-pass { background-color: var(--status-success); }
-        .dot-fail { background-color: var(--status-error); }
-        .dot-warn { background-color: var(--status-warning); }
-        .dot-neutral { background-color: var(--text-muted); }
 
-        .status-pass { color: var(--status-success-text); }
-        .status-fail { color: var(--status-error-text); }
-        .status-warn { color: var(--status-warning-text); }
-        .status-neutral { color: var(--text-secondary); }
-
-        .matrix-meta {
-          font-size: 11px;
-          color: var(--text-secondary);
+        .diag-value {
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--text-primary);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
           margin-top: 2px;
         }
 
-        /* Developer JSON Drawer */
+        .diag-desc {
+          font-size: 11px;
+          color: var(--text-muted);
+          line-height: 1.4;
+        }
+
+        /* 3. Developer JSON Drawer */
         .raw-json-panel {
           border-top: 1px solid var(--border-subtle);
-          padding-top: 10px;
+          padding-top: 12px;
+          margin-top: 2px;
         }
 
         .raw-json-header-btn {
@@ -1070,24 +1162,44 @@ export const SingleVerifyPage: React.FC = () => {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 6px 8px;
-          background: transparent;
-          border: 1px solid transparent;
-          border-radius: var(--radius-xs);
-          color: var(--text-muted);
+          padding: 8px 12px;
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid var(--border-subtle);
+          border-radius: var(--radius-sm);
+          color: var(--text-secondary);
           font-size: 12px;
           cursor: pointer;
           transition: all 0.12s ease;
         }
         .raw-json-header-btn:hover {
-          color: var(--text-primary);
           background-color: var(--bg-hover);
+          color: var(--text-primary);
+          border-color: var(--border-standard);
         }
 
         .json-btn-left {
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 8px;
+        }
+
+        .json-title {
+          font-weight: 500;
+        }
+
+        .json-badge {
+          font-size: 9.5px;
+          font-weight: 700;
+          padding: 1px 5px;
+          background-color: rgba(255, 255, 255, 0.06);
+          border-radius: var(--radius-xs);
+          color: var(--text-muted);
+        }
+
+        .json-btn-right {
+          display: flex;
+          align-items: center;
+          gap: 8px;
         }
 
         .json-expand-label {
@@ -1095,16 +1207,26 @@ export const SingleVerifyPage: React.FC = () => {
           color: var(--text-tertiary);
         }
 
-        .raw-json-code {
+        .json-chevron {
+          transition: transform 0.2s ease;
+        }
+        .json-chevron.open {
+          transform: rotate(180deg);
+        }
+
+        .raw-json-body {
           margin-top: 8px;
-          padding: 12px;
-          background-color: #070809;
+        }
+
+        .raw-json-code {
+          padding: 14px;
+          background-color: #060709;
           border: 1px solid var(--border-subtle);
           border-radius: var(--radius-sm);
           font-size: 11px;
           color: #B4B9C2;
           overflow-x: auto;
-          line-height: 1.5;
+          line-height: 1.55;
         }
 
         /* History Section */
@@ -1222,7 +1344,16 @@ export const SingleVerifyPage: React.FC = () => {
         }
 
         @media (max-width: 960px) {
-          .diagnostics-matrix {
+          .result-hero-banner {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 14px;
+          }
+          .hero-actions-row {
+            width: 100%;
+            justify-content: flex-start;
+          }
+          .diag-grid {
             grid-template-columns: repeat(2, 1fr);
           }
         }
@@ -1252,27 +1383,27 @@ export const SingleVerifyPage: React.FC = () => {
             display: none;
           }
           .presets-tags {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            flex-wrap: nowrap;
+            flex-wrap: wrap;
+            gap: 6px;
             width: 100%;
-            padding-bottom: 2px;
           }
           .preset-chip {
-            flex-shrink: 0;
+            font-size: 11px;
+            padding: 4px 8px;
           }
-          .result-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
+          .result-hero-banner {
+            padding: 14px 16px;
           }
-          .result-actions {
+          .hero-email {
+            font-size: 16px;
+          }
+          .hero-actions-row {
             width: 100%;
+            justify-content: flex-start;
           }
-          .verdict-summary-strip {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 6px;
+          .result-body-content {
+            padding: 14px 16px;
+            gap: 16px;
           }
           .history-card-header {
             flex-direction: column;
@@ -1281,15 +1412,13 @@ export const SingleVerifyPage: React.FC = () => {
           }
           .history-filters {
             width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            flex-wrap: nowrap;
-            padding-bottom: 2px;
+            flex-wrap: wrap;
+            gap: 6px;
           }
         }
 
         @media (max-width: 520px) {
-          .diagnostics-matrix {
+          .diag-grid {
             grid-template-columns: 1fr;
           }
         }

@@ -16,9 +16,9 @@ import {
   Eye,
   X
 } from 'lucide-react';
-import { Button } from '../components/common/Button';
-import { DeliverabilityBadge } from '../components/common/Badge';
-import { Card } from '../components/common/Card';
+import { Button } from '@/components/ui/button';
+import { DeliverabilityBadge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import { Modal } from '../components/common/Modal';
 
 export const BulkVerifyPage: React.FC = () => {
@@ -1678,13 +1678,12 @@ export const BulkVerifyPage: React.FC = () => {
           }
           .records-filter-pills {
             width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            flex-wrap: nowrap;
-            padding-bottom: 2px;
+            flex-wrap: wrap;
+            gap: 6px;
           }
           .filter-pill {
-            flex-shrink: 0;
+            font-size: 11px;
+            padding: 4px 8px;
           }
           .telemetry-grid {
             grid-template-columns: 1fr;

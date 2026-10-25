@@ -2,7 +2,7 @@ import React from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
-// import { SupportWidget } from './components/layout/SupportWidget';
+import { FloatingSupportChat } from './components/layout/FloatingSupportChat';
 import { ToastContainer } from './components/common/ToastContainer';
 
 // Pages
@@ -12,8 +12,8 @@ import { IntegrationsPage } from './pages/IntegrationsPage';
 import { ApiPage } from './pages/ApiPage';
 import { BuyCreditsPage } from './pages/BuyCreditsPage';
 import { RoadmapPage } from './pages/RoadmapPage';
-import { SupportPage } from './pages/SupportPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { SupportPage } from './pages/SupportPage';
 
 const AppContent: React.FC = () => {
   const { screen, isSidebarCollapsed } = useApp();
@@ -26,8 +26,8 @@ const AppContent: React.FC = () => {
       api: 'API · MailVerify',
       'buy-credits': 'Buy Credits · MailVerify',
       roadmap: 'Roadmap · MailVerify',
-      support: 'Support · MailVerify',
       settings: 'Settings · MailVerify',
+      support: 'Help & Support · MailVerify',
     };
     document.title = titles[screen] || 'MailVerify';
   }, [screen]);
@@ -49,9 +49,12 @@ const AppContent: React.FC = () => {
         {screen === 'api' && <ApiPage />}
         {screen === 'buy-credits' && <BuyCreditsPage />}
         {screen === 'roadmap' && <RoadmapPage />}
-        {screen === 'support' && <SupportPage />}
         {screen === 'settings' && <SettingsPage />}
+        {screen === 'support' && <SupportPage />}
       </main>
+
+      {/* Global Floating AI Support Chat Assistant */}
+      <FloatingSupportChat />
 
       {/* Global Accessible Toast Notifications */}
       <ToastContainer />
